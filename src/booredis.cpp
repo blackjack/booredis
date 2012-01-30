@@ -1,4 +1,4 @@
-#include "redisasyncclient.h"
+#include "booredis.h"
 
 RedisAsyncClient::RedisAsyncClient():
     m_onceConnected(false),

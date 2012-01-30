@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 find_package(Boost COMPONENTS thread system REQUIRED)
 
 set(SOURCES
-    src/redisasyncclient.cpp
+    src/booredis.cpp
 )
 
 include_directories(${Boost_INCLUDE_DIR})
