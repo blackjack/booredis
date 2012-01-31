@@ -1,15 +1,15 @@
-#include "../redisasyncclient.cpp"
+#include "../booredisasync.h"
 #include <iostream>
 
 
-class RedisWorker: public RedisAsyncClient {
+class RedisWorker: public BooRedisAsync {
 public:
     void onRedisMessage(const RedisMessage& msg) {
         std::cout << "Redis " << type2str(msg.type()) << " message received:\n";
         for (size_t i = 0; i<msg.array().size(); ++i)
             std::cout << msg.array()[i] << std::endl;
     }
-    void onLogMessage(const std::string& msg, int logLevel = RedisAsyncClient::LOG_LEVEL_INFO) {
+    void onLogMessage(const std::string& msg, int logLevel = BooRedisAsync::LOG_LEVEL_INFO) {
         std::cout << "Redis log message: " << msg << std::endl;
     }
 
@@ -28,28 +28,10 @@ private:
 int main( int argc, const char* argv[] ) {
 
     RedisWorker redis;
-    redis.connect("localhost",6379,10000);
+    redis.connect("push2.trdatadev.com",6379,10000);
 
     std::vector<std::string> args;
-    args.push_back("HMSET");
-    args.push_back("hashmap");
-    args.push_back("key1");
-    args.push_back("value1");
-    args.push_back("key2");
-    args.push_back("value2");
-    args.push_back("key3");
-    args.push_back("value3");
-    redis.command(args);
-
-    args.clear();
-    args.push_back("HGET");
-    args.push_back("hashmap");
-    args.push_back("key1");
-    redis.command(args);
-
-    args.clear();
-    args.push_back("HGETALL");
-    args.push_back("hashmap");
+    args.push_back("MONITOR");
     redis.command(args);
 
     char c;

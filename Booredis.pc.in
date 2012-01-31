@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@LIB_INSTALL_DIR@
+includedir=@INCLUDE_INSTALL_DIR@
+
+Name: Booredis
+Description: Booredis is a boost::asio based asynchronous Redis client library
+Version: @BOOREDIS_LIB_MAJOR_VERSION@.@BOOREDIS_LIB_MINOR_VERSION@.@BOOREDIS_LIB_PATCH_VERSION@
+Libs: -L${libdir} -lbooredis
+Cflags: -I${includedir}

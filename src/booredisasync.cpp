@@ -1,6 +1,6 @@
-#include "booredis.h"
+#include "booredisasync.h"
 
-RedisAsyncClient::RedisAsyncClient():
+BooRedisAsync::BooRedisAsync():
     m_onceConnected(false),
     m_connected(false),
     m_writeInProgress(false),
@@ -16,7 +16,7 @@ RedisAsyncClient::RedisAsyncClient():
     m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
-void RedisAsyncClient::connect(const char *address, int port, int timeout_msec)
+void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
 {
     boost::asio::ip::tcp::resolver resolver(m_io_service);
     char aport[8];
@@ -36,7 +36,7 @@ void RedisAsyncClient::connect(const char *address, int port, int timeout_msec)
 }
 
 
-void RedisAsyncClient::command(const std::vector<std::string> &command_and_arguments)
+void BooRedisAsync::command(const std::vector<std::string> &command_and_arguments)
 {
     std::stringstream cmd;
     cmd << "*" << command_and_arguments.size() << "\r\n";
@@ -50,7 +50,7 @@ void RedisAsyncClient::command(const std::vector<std::string> &command_and_argum
 
 }
 
-void RedisAsyncClient::close() {
+void BooRedisAsync::close() {
     m_connectTimer.cancel();
     m_socket->close();
     m_io_service.stop();
@@ -58,21 +58,21 @@ void RedisAsyncClient::close() {
         m_thread.join();
 }
 
-bool RedisAsyncClient::connected() {
+bool BooRedisAsync::connected() {
     return m_connected;
 }
 
-void RedisAsyncClient::connectStart(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+void BooRedisAsync::connectStart(boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 {
     m_endpointIterator = endpoint_iterator;
     boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
-    m_socket->async_connect(endpoint,boost::bind(&RedisAsyncClient::connectComplete,this,boost::asio::placeholders::error));
+    m_socket->async_connect(endpoint,boost::bind(&BooRedisAsync::connectComplete,this,boost::asio::placeholders::error));
 
     m_connectTimer.expires_from_now(m_connectionTimeout);
-    m_connectTimer.async_wait(boost::bind(&RedisAsyncClient::onError, this, boost::asio::placeholders::error));
+    m_connectTimer.async_wait(boost::bind(&BooRedisAsync::onError, this, boost::asio::placeholders::error));
 }
 
-void RedisAsyncClient::connectComplete(const boost::system::error_code& error)
+void BooRedisAsync::connectComplete(const boost::system::error_code& error)
 {
     if (!error)
     {
@@ -90,30 +90,30 @@ void RedisAsyncClient::connectComplete(const boost::system::error_code& error)
         onError(error);
 }
 
-void RedisAsyncClient::write(const std::string &msg) {
-    m_io_service.post(boost::bind(&RedisAsyncClient::doWrite, this, msg));
+void BooRedisAsync::write(const std::string &msg) {
+    m_io_service.post(boost::bind(&BooRedisAsync::doWrite, this, msg));
 }
 
 
-void RedisAsyncClient::doWrite(const std::string &msg)
+void BooRedisAsync::doWrite(const std::string &msg)
 {
     m_writeBuffer.push_back(msg);
     if (connected() && !m_writeInProgress)
         writeStart();
 }
 
-void RedisAsyncClient::writeStart()
+void BooRedisAsync::writeStart()
 {
     m_writeInProgress = true;
     const std::string& msg = m_writeBuffer.front();
     boost::asio::async_write(*m_socket,
                              boost::asio::buffer(msg),
-                             boost::bind(&RedisAsyncClient::writeComplete,
+                             boost::bind(&BooRedisAsync::writeComplete,
                                          this,
                                          boost::asio::placeholders::error));
 }
 
-void RedisAsyncClient::writeComplete(const boost::system::error_code &error)
+void BooRedisAsync::writeComplete(const boost::system::error_code &error)
 {
     if (!error)
     {
@@ -127,16 +127,16 @@ void RedisAsyncClient::writeComplete(const boost::system::error_code &error)
         onError(error);
 }
 
-void RedisAsyncClient::readStart()
+void BooRedisAsync::readStart()
 {
     m_socket->async_read_some(boost::asio::buffer(m_readBuffer, maxReadLength),
-                             boost::bind(&RedisAsyncClient::readComplete,
+                             boost::bind(&BooRedisAsync::readComplete,
                                          this,
                                          boost::asio::placeholders::error,
                                          boost::asio::placeholders::bytes_transferred));
 }
 
-void RedisAsyncClient::readComplete(const boost::system::error_code &error, size_t bytesTransferred)
+void BooRedisAsync::readComplete(const boost::system::error_code &error, size_t bytesTransferred)
 {
     if (!error)
     {
@@ -147,7 +147,7 @@ void RedisAsyncClient::readComplete(const boost::system::error_code &error, size
         onError(error);
 }
 
-void RedisAsyncClient::processRawBuffer(size_t bytesTransferred)
+void BooRedisAsync::processRawBuffer(size_t bytesTransferred)
 {
     unsigned int carret = 0;
     while ( carret < bytesTransferred ) {
@@ -191,7 +191,7 @@ void RedisAsyncClient::processRawBuffer(size_t bytesTransferred)
 }
 
 
-void RedisAsyncClient::processMsgBuffer() {
+void BooRedisAsync::processMsgBuffer() {
     switch (m_analyzeState) {
     case GetType: {
         switch (m_redisMsgBuf.at(0)) {
@@ -287,7 +287,7 @@ void RedisAsyncClient::processMsgBuffer() {
     m_redisMsgBuf.clear();
 }
 
-void RedisAsyncClient::onError(const boost::system::error_code &error)
+void BooRedisAsync::onError(const boost::system::error_code &error)
 {
     if (error == boost::asio::error::operation_aborted)
         return;
@@ -306,27 +306,27 @@ void RedisAsyncClient::onError(const boost::system::error_code &error)
     onDisconnect();
 }
 
-boost::asio::ip::tcp::resolver::iterator RedisAsyncClient::getEndpointIterator()
+boost::asio::ip::tcp::resolver::iterator BooRedisAsync::getEndpointIterator()
 {
     return m_endpointIterator;
 }
 
-void RedisAsyncClient::setEndpointIterator(boost::asio::ip::tcp::resolver::iterator iterator)
+void BooRedisAsync::setEndpointIterator(boost::asio::ip::tcp::resolver::iterator iterator)
 {
     m_endpointIterator = iterator;
 }
 
-bool RedisAsyncClient::onceConnected()
+bool BooRedisAsync::onceConnected()
 {
     return m_onceConnected;
 }
 
-bool RedisAsyncClient::isLastEndpoint(boost::asio::ip::tcp::resolver::iterator iterator)
+bool BooRedisAsync::isLastEndpoint(boost::asio::ip::tcp::resolver::iterator iterator)
 {
     return (++iterator == boost::asio::ip::tcp::resolver::iterator());
 }
 
-std::string RedisAsyncClient::endpointToString(boost::asio::ip::tcp::resolver::iterator iterator)
+std::string BooRedisAsync::endpointToString(boost::asio::ip::tcp::resolver::iterator iterator)
 {
     boost::asio::ip::tcp::endpoint endpoint = *iterator;
     std::stringstream s;
@@ -334,18 +334,18 @@ std::string RedisAsyncClient::endpointToString(boost::asio::ip::tcp::resolver::i
     return s.str();
 }
 
-void RedisAsyncClient::connect(boost::asio::ip::tcp::resolver::iterator iterator)
+void BooRedisAsync::connect(boost::asio::ip::tcp::resolver::iterator iterator)
 {
     connectStart(iterator);
 }
 
-void RedisAsyncClient::closeSocket()
+void BooRedisAsync::closeSocket()
 {
     m_socket->close();
     m_socket.reset(new boost::asio::ip::tcp::socket(m_io_service));
 }
 
-void RedisAsyncClient::reset()
+void BooRedisAsync::reset()
 {
     m_bytesToRead = 1;
     m_messagesToRead = 0;

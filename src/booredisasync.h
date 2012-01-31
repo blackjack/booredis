@@ -17,16 +17,16 @@ struct RedisMessage {
     const std::vector<std::string>& array() const;
     const std::string& error() const;
 private:
-    friend class RedisAsyncClient;
+    friend class BooRedisAsync;
     MessageType m_type;
     std::vector<std::string> m_data;
 };
 
 
-class RedisAsyncClient
+class BooRedisAsync
 {
 public:
-    RedisAsyncClient();
+    BooRedisAsync();
     void connect(const char* address, int port, int timeout_msec);
     void close();
     bool connected();

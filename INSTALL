@@ -1,0 +1,18 @@
+Installing Booredis
+--------------
+
+Booredis requires:
+- boost libraries: thread and system
+- cmake 2.6 or greater
+
+For Unix/Linux/Mac:
+
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=_preferred_path_ ..
+  make
+  make install
+  /sbin/ldconfig, if necessary
+
+Please report problems to:
+  https://github.com/blackjack/booredis
