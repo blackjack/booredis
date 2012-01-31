@@ -1,4 +1,4 @@
-# Find Booredis - Booredis handling library for Qt
+# Find booredis - booredis handling library for Qt
 #
 # This module defines
 #  BOOREDIS_FOUND - whether the booredis library was found
@@ -17,7 +17,7 @@ else (BOOREDIS_INCLUDE_DIR AND BOOREDIS_LIBRARIES)
     # use pkg-config to get the values of BOOREDIS_INCLUDE_DIRS
     # and BOOREDIS_LIBRARY_DIRS to add as hints to the find commands.
     include (FindPkgConfig)
-    pkg_check_modules (BOOREDIS REQUIRED Booredis>=0.5)
+    pkg_check_modules (booredis REQUIRED booredis>=0.1)
   endif (NOT WIN32)
 
   find_library (BOOREDIS_LIBRARIES

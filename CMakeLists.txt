@@ -1,4 +1,4 @@
-PROJECT(Booredis)
+PROJECT(booredis)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
@@ -31,7 +31,7 @@ find_package(Boost COMPONENTS thread system REQUIRED)
 SET (LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")
 SET (INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
-SET (CMAKE_MODULES_INSTALL_DIR "${CMAKE_ROOT}/Modules" CACHE PATH "The directory to install FindBooredis.cmake to")
+SET (CMAKE_MODULES_INSTALL_DIR "${CMAKE_ROOT}/Modules" CACHE PATH "The directory to install Findbooredis.cmake to")
 
 
 set(BOOREDIS_LIB_MAJOR_VERSION "0")
@@ -44,10 +44,10 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
 
 # pkg-config
 IF (NOT WIN32)
-  CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/Booredis.pc.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/Booredis.pc
+  CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/booredis.pc.in
+                  ${CMAKE_CURRENT_BINARY_DIR}/booredis.pc
                   @ONLY)
-  INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/Booredis.pc
+  INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis.pc
            DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 ENDIF (NOT WIN32)
 
