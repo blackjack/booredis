@@ -76,5 +76,11 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/booredis-config-version.cmake
         DESTINATION "lib/cmake/booredis")
 
+install(FILES
+        COPYING
+        README
+        DESTINATION share/doc/libbooredis
+)
+
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")

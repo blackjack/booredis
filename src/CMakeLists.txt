@@ -21,3 +21,11 @@ INSTALL(TARGETS booredis
    RUNTIME DESTINATION bin
    ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
 )
+
+add_executable(example examples/example.cpp)
+target_link_libraries(example booredis)
+
+install(FILES
+        examples/example.cpp
+        DESTINATION share/doc/libbooredis/examples
+)

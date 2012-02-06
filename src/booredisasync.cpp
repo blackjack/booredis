@@ -51,9 +51,7 @@ void BooRedisAsync::command(const std::vector<std::string> &command_and_argument
 }
 
 void BooRedisAsync::close() {
-    m_connectTimer.cancel();
     m_socket->close();
-    m_io_service.stop();
     if (boost::this_thread::get_id() != m_thread.get_id())
         m_thread.join();
 }
