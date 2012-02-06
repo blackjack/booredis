@@ -28,7 +28,7 @@ class BooRedisAsync
 public:
     BooRedisAsync();
     void connect(const char* address, int port, int timeout_msec);
-    void close();
+    virtual void close();
     bool connected();
 
     void command(const std::vector<std::string> &command_and_arguments); //for binary-safe multiline commands
@@ -70,6 +70,7 @@ public:
 
 protected:
     void write(const std::string& msg);
+    boost::asio::io_service& io_service() { return m_io_service; } 
 
     boost::asio::ip::tcp::resolver::iterator getEndpointIterator();
     void setEndpointIterator(boost::asio::ip::tcp::resolver::iterator iterator);
