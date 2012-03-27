@@ -1,13 +1,15 @@
 install(FILES
         booredisasync.h
+        booredissync.h
+        redismessage.h
         DESTINATION ${INCLUDE_INSTALL_DIR}/booredis COMPONENT Devel
 )
 
 
 
-set (booredis_SRCS booredisasync.cpp)
+set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp)
 
-add_library (booredis SHARED ${booredis_SRCS})
+add_library (booredis STATIC ${booredis_SRCS})
 target_link_libraries(booredis  ${Boost_LIBRARIES})
 
 set_target_properties(booredis PROPERTIES
@@ -22,10 +24,14 @@ INSTALL(TARGETS booredis
    ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
 )
 
-add_executable(example examples/example.cpp)
-target_link_libraries(example booredis)
+add_executable(async examples/async.cpp)
+target_link_libraries(async booredis)
+
+add_executable(sync examples/sync.cpp)
+target_link_libraries(sync booredis)
 
 install(FILES
-        examples/example.cpp
+        examples/async.cpp
+        examples/sync.cpp
         DESTINATION share/doc/libbooredis/examples
 )

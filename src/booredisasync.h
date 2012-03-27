@@ -1,26 +1,12 @@
-#ifndef REDISASYNCCLIENT_H
-#define REDISASYNCCLIENT_H
+#ifndef BOOREDISASYNC_H
+#define BOOREDISASYNC_H
 
 #include <deque>
-#include <vector>
-#include <string>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-
-struct RedisMessage {
-    enum MessageType { Type_Unknown, Type_String, Type_Integer, Type_Array, Type_Error };
-    MessageType type() const;
-    int integer() const;
-    const std::string& string() const;
-    const std::vector<std::string>& array() const;
-    const std::string& error() const;
-private:
-    friend class BooRedisAsync;
-    MessageType m_type;
-    std::vector<std::string> m_data;
-};
+#include "redismessage.h"
 
 
 class BooRedisAsync
@@ -125,4 +111,4 @@ private:
     boost::thread m_thread; //io_service thread
 };
 
-#endif // REDISASYNCCLIENT_H
+#endif // BOOREDISASYNC_H
