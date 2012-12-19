@@ -16,7 +16,7 @@ int main( int argc, const char* argv[] ) {
     char c;
     std::cin.read(&c,1);
 
-    redis.close();
+    redis.disconnect();
     return 0;
 }
 

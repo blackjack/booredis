@@ -10,7 +10,7 @@ struct RedisMessage {
     enum MessageType { Type_Unknown, Type_String, Type_Integer, Type_Array, Type_Error };
     MessageType type() const;
     int integer() const;
-    bool empty();
+    bool empty() const;
     const std::string& string() const;
     const std::vector<std::string>& array() const;
     const std::string& error() const;

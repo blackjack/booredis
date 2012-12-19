@@ -14,8 +14,10 @@ class BooRedisSync
 {
 public:
     BooRedisSync();
+    virtual ~BooRedisSync();
+
     bool connect(const char* address, int port);
-    virtual void close();
+    void disconnect();
     bool connected();
 
     RedisMessage command(const std::vector<std::string> &command_and_arguments); //for binary-safe multiline commands
@@ -37,6 +39,7 @@ private:
     bool processMsgBuffer();
 
 private:
+    bool m_connected;
     boost::asio::io_service m_ioService;
     boost::scoped_ptr<boost::asio::ip::tcp::socket> m_socket;
 
@@ -46,7 +49,6 @@ private:
 
     int m_bytesToRead;
     int m_messagesToRead;
-
 
     enum ReadState { ReadUntilNewLine, ReadUntilBytes };
     enum AnalyzeState { GetType, GetCount, GetLength, GetData };

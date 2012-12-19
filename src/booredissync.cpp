@@ -1,6 +1,7 @@
 #include "booredissync.h"
 
 BooRedisSync::BooRedisSync():
+    m_connected(false),
     m_socket(new boost::asio::ip::tcp::socket(m_ioService)),
     m_bytesToRead(1),
     m_messagesToRead(0),
@@ -8,6 +9,11 @@ BooRedisSync::BooRedisSync():
     m_analyzeState(GetType)
 {
     m_bufferMessage.m_type = RedisMessage::Type_Unknown;
+}
+
+BooRedisSync::~BooRedisSync()
+{
+    disconnect();
 }
 
 bool BooRedisSync::connect(const char *address, int port)
@@ -24,11 +30,18 @@ bool BooRedisSync::connect(const char *address, int port)
     boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query);
     while (it!=boost::asio::ip::tcp::resolver::iterator()) {
         error = m_socket->connect(endpoint,error);
-        if (!error) return true;
+        if (!error) {
+            m_connected = true;
+            return true;
+        }
         ++it;
     }
     onError(error);
     return false;
+}
+
+bool BooRedisSync::connected() {
+    return m_connected;
 }
 
 RedisMessage BooRedisSync::command(const std::vector<std::string> &command_and_arguments)
@@ -43,8 +56,9 @@ RedisMessage BooRedisSync::command(const std::vector<std::string> &command_and_a
     return write(cmd.str());
 }
 
-void BooRedisSync::close() {
-    m_socket->close();
+void BooRedisSync::disconnect() {
+    if (m_socket->is_open())
+        m_socket->close();
     reset();
 }
 
@@ -166,6 +180,8 @@ bool BooRedisSync::processMsgBuffer() {
     }
     case GetCount: {
         m_messagesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10);
+        if (m_messagesToRead==0)
+            return true;
         m_bufferMessage.m_data.resize(m_messagesToRead);
         m_bytesToRead = 1;
         m_readState = ReadUntilBytes;
@@ -204,6 +220,7 @@ void BooRedisSync::onError(const boost::system::error_code &error)
     if (error == boost::asio::error::operation_aborted)
         return;
 
+    m_connected = false;
     m_lastError = error.message();
 
     closeSocket(); //close socket and cleanup

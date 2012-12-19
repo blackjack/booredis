@@ -16,10 +16,10 @@ public:
 private:
     std::string type2str(RedisMessage::MessageType type) {
         switch (type) {
-            case RedisMessage::Type_String: return "String";
-            case RedisMessage::Type_Integer: return "Integer";
-            case RedisMessage::Type_Array: return "Array";
-            default: return "Error";
+        case RedisMessage::Type_String: return "String";
+        case RedisMessage::Type_Integer: return "Integer";
+        case RedisMessage::Type_Array: return "Array";
+        default: return "Error";
         }
     }
 };
@@ -28,16 +28,19 @@ private:
 int main( int argc, const char* argv[] ) {
 
     RedisWorker redis;
-    redis.connect("push2.trdatadev.com",6379,10000);
+    redis.connect("localhost",6379,10000);
 
+    redis.command("SELECT 2\n");
     std::vector<std::string> args;
-    args.push_back("MONITOR");
+    args.push_back("SET");
+    args.push_back("asdf");
+    args.push_back("qwer");
     redis.command(args);
 
     char c;
     std::cin.read(&c,1);
 
-    redis.close();
+    redis.disconnect();
     return 0;
 }
 

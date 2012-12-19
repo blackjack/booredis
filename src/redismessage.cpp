@@ -11,7 +11,7 @@ int RedisMessage::integer() const
     return atoi(m_data.at(0).c_str());
 }
 
-bool RedisMessage::empty()
+bool RedisMessage::empty() const
 {
     return m_data.empty();
 }

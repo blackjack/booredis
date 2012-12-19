@@ -13,36 +13,18 @@ class BooRedisAsync
 {
 public:
     BooRedisAsync();
+    virtual ~BooRedisAsync();
     void connect(const char* address, int port, int timeout_msec);
-    virtual void close();
+    void disconnect();
     bool connected();
 
     void command(const std::vector<std::string> &command_and_arguments); //for binary-safe multiline commands
     void command(const std::string &command) {write(command);} //for raw commands
 
-    //main callback
     virtual void onRedisMessage(const RedisMessage& msg) {} //implement this to get redis messages
     virtual void onLogMessage(const std::string& msg, int logLevel = LOG_LEVEL_INFO) {} //not implemented in base class
-
-    //session level callbacks
-
-    //default behaviour - reconnect after 1 second OR
-    //try next endpoint if not connected to any endpoint yet
-    virtual void onDisconnect() {
-        boost::asio::ip::tcp::resolver::iterator it = getEndpointIterator();
-        if (!onceConnected() && !isLastEndpoint(it)) { //try another address
-            setEndpointIterator(++it); //switch to the next endpoint
-            onLogMessage("Trying next Redis address: " + endpointToString(it),LOG_LEVEL_DEBUG);
-        } else
-            sleep(1);
-
-        onLogMessage("Reconnecting to Redis " + endpointToString(it),LOG_LEVEL_INFO);
-
-        connect(it);
-    }
-    virtual void onConnect() {
-        onLogMessage("Successfully connected to Redis " + endpointToString(getEndpointIterator()),LOG_LEVEL_INFO);
-    }
+    virtual void onDisconnect() {}
+    virtual void onConnect() {}
 
 public:
     static const int LOG_LEVEL_EMERG = 0;
@@ -69,6 +51,7 @@ protected:
     void closeSocket();
     void reset(); //resets all Redis protocol-related state variables
 
+    std::deque<std::string> m_writeBuffer; // buffered write data
 private:
     static const int maxReadLength = 1023; // maximum amount of data to read in one operation
     void connectStart(boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
@@ -107,7 +90,6 @@ private:
     ReadState m_readState;
     AnalyzeState m_analyzeState;
 
-    std::deque<std::string> m_writeBuffer; // buffered write data
     boost::thread m_thread; //io_service thread
 };
 

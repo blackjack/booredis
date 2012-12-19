@@ -16,8 +16,18 @@ BooRedisAsync::BooRedisAsync():
     m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
+BooRedisAsync::~BooRedisAsync()
+{
+    disconnect();
+}
+
 void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
 {
+    if (m_connected) {
+        disconnect();
+        m_socket.reset(new boost::asio::ip::tcp::socket(m_io_service));
+    }
+
     boost::asio::ip::tcp::resolver resolver(m_io_service);
     char aport[8];
     sprintf(aport,"%d",port); //resolver::query accepts string as second parameter
@@ -50,12 +60,12 @@ void BooRedisAsync::command(const std::vector<std::string> &command_and_argument
 
 }
 
-void BooRedisAsync::close() {
+void BooRedisAsync::disconnect() {
     m_connected = false;
-    m_socket->close();
+    if (m_socket->is_open())
+        m_socket->close();
     m_io_service.stop();
-    if (boost::this_thread::get_id() != m_thread.get_id())
-        m_thread.join();
+    m_thread.join();
 }
 
 bool BooRedisAsync::connected() {
@@ -81,6 +91,7 @@ void BooRedisAsync::connectComplete(const boost::system::error_code& error)
         m_onceConnected = true;
         m_connected = true;
 
+        onLogMessage("Successfully connected to Redis " + endpointToString(getEndpointIterator()),LOG_LEVEL_INFO);
         onConnect();
 
         if (!m_writeInProgress && !m_writeBuffer.empty())
@@ -252,6 +263,8 @@ void BooRedisAsync::processMsgBuffer() {
     }
     case GetCount: {
         m_messagesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10);
+        if (m_messagesToRead==0)
+            return true;
         m_bufferMessage.m_data.resize(m_messagesToRead);
         m_bytesToRead = 1;
         m_readState = ReadUntilBytes;
@@ -300,10 +313,24 @@ void BooRedisAsync::onError(const boost::system::error_code &error)
     m_connected = false;
     m_connectTimer.cancel();
 
-    closeSocket(); //close socket and cleanup
+    try {
+        closeSocket(); //close socket and cleanup
+    } catch (...) {}
     reset();
 
     onDisconnect();
+
+    boost::asio::ip::tcp::resolver::iterator it = getEndpointIterator();
+    if (!onceConnected() && !isLastEndpoint(it)) { //try another address
+        setEndpointIterator(++it); //switch to the next endpoint
+        onLogMessage("Trying next Redis address: " + endpointToString(it),LOG_LEVEL_DEBUG);
+    } else
+        sleep(1);
+
+    onLogMessage("Reconnecting to Redis " + endpointToString(it),LOG_LEVEL_INFO);
+
+    connect(it);
+
 }
 
 boost::asio::ip::tcp::resolver::iterator BooRedisAsync::getEndpointIterator()
@@ -341,7 +368,8 @@ void BooRedisAsync::connect(boost::asio::ip::tcp::resolver::iterator iterator)
 
 void BooRedisAsync::closeSocket()
 {
-    m_socket->close();
+    if (m_socket->is_open())
+        m_socket->close();
     m_socket.reset(new boost::asio::ip::tcp::socket(m_io_service));
 }
 
