@@ -263,8 +263,11 @@ void BooRedisAsync::processMsgBuffer() {
     }
     case GetCount: {
         m_messagesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10);
-        if (m_messagesToRead==0)
-            return true;
+        if (m_messagesToRead==0) {
+            onRedisMessage(m_bufferMessage);
+            reset();
+            return;
+        }
         m_bufferMessage.m_data.resize(m_messagesToRead);
         m_bytesToRead = 1;
         m_readState = ReadUntilBytes;
