@@ -14,6 +14,7 @@ class BooRedisSync
 {
 public:
     BooRedisSync();
+    BooRedisSync(boost::asio::io_service& io_service);
     virtual ~BooRedisSync();
 
     bool connect(const char* address, int port);
@@ -40,7 +41,8 @@ private:
 
 private:
     bool m_connected;
-    boost::asio::io_service m_ioService;
+    bool m_ownIoService;
+    boost::asio::io_service *m_ioService;
     boost::scoped_ptr<boost::asio::ip::tcp::socket> m_socket;
 
     char m_readBuffer[maxReadLength]; //raw data from the socket
