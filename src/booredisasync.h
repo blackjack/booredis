@@ -13,6 +13,7 @@ class BooRedisAsync
 {
 public:
     BooRedisAsync();
+    BooRedisAsync(boost::asio::io_service& io_service);
     virtual ~BooRedisAsync();
     void connect(const char* address, int port, int timeout_msec);
     void disconnect();
@@ -38,7 +39,7 @@ public:
 
 protected:
     void write(const std::string& msg);
-    boost::asio::io_service& io_service() { return m_io_service; } 
+    boost::asio::io_service& io_service() { return *m_io_service; }
 
     boost::asio::ip::tcp::resolver::iterator getEndpointIterator();
     void setEndpointIterator(boost::asio::ip::tcp::resolver::iterator iterator);
@@ -72,9 +73,10 @@ private:
     bool m_writeInProgress; //if write is in progress
     boost::asio::ip::tcp::resolver::iterator m_endpointIterator;
 
-    boost::asio::io_service m_io_service;
+    bool m_ownIoService;
+    boost::scoped_ptr<boost::asio::io_service> m_io_service;
     boost::scoped_ptr<boost::asio::ip::tcp::socket> m_socket;
-    boost::asio::deadline_timer m_connectTimer;
+    boost::scoped_ptr<boost::asio::deadline_timer> m_connectTimer;
     boost::posix_time::time_duration m_connectionTimeout;
 
     char m_readBuffer[maxReadLength]; //raw data from the socket

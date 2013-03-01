@@ -2,7 +2,9 @@
 
 BooRedisSync::BooRedisSync():
     m_connected(false),
-    m_socket(new boost::asio::ip::tcp::socket(m_ioService)),
+    m_ownIoService(true),
+    m_ioService(new boost::asio::io_service()),
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
     m_bytesToRead(1),
     m_messagesToRead(0),
     m_readState(ReadUntilBytes),
@@ -11,14 +13,28 @@ BooRedisSync::BooRedisSync():
     m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
+BooRedisSync::BooRedisSync(boost::asio::io_service &io_service):
+    m_connected(false),
+    m_ownIoService(false),
+    m_ioService(&io_service),
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
+    m_bytesToRead(1),
+    m_messagesToRead(0),
+    m_readState(ReadUntilBytes),
+    m_analyzeState(GetType)
+{
+}
+
 BooRedisSync::~BooRedisSync()
 {
     disconnect();
+    if (m_ownIoService)
+        delete m_ioService;
 }
 
 bool BooRedisSync::connect(const char *address, int port)
 {
-    boost::asio::ip::tcp::resolver resolver(m_ioService);
+    boost::asio::ip::tcp::resolver resolver(*m_ioService);
     char aport[8];
     sprintf(aport,"%d",port); //resolver::query accepts string as second parameter
 
@@ -230,7 +246,7 @@ void BooRedisSync::onError(const boost::system::error_code &error)
 void BooRedisSync::closeSocket()
 {
     m_socket->close();
-    m_socket.reset(new boost::asio::ip::tcp::socket(m_ioService));
+    m_socket.reset(new boost::asio::ip::tcp::socket(*m_ioService));
 }
 
 void BooRedisSync::reset()
