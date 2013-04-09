@@ -1,16 +1,18 @@
 Source: booredis
-Priority: extra
-Maintainer: Oleksandr Senkovych <bjsenya@gmail.com>
-Uploaders: Andriy Senkovych <jolly_roger@itblog.org.ua>
-Build-Depends: debhelper (>= 7), cmake, libboost-thread-dev (>= 1.42) , libboost-system-dev (>= 1.42)
-Standards-Version: 3.9.1
 Section: libs
+Priority: extra
+Maintainer: Andriy Senkovych <jolly_roger@itblog.org.ua>
+Uploaders: Oleksandr Senkovych <bjsenya@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~), cmake, libboost-thread-dev (>= 1.42) , libboost-system-dev (>= 1.42)
+Standards-Version: 3.9.4.0
 Homepage: https://github.com/blackjack/booredis
+Vcs-Git: git://github.com/blackjack/booredis.git
+Vcs-Browser: https://github.com/blackjack/booredis
 
 Package: libbooredis0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description:  Booredis is an asyncronous boost::asio-based Redis client library.
+Description: Asyncronous boost::asio-based Redis client library.
  It's main purpose is simplicity. You don't have to worry about almost
  nothing: it's very easy to use.
  .
@@ -21,7 +23,7 @@ Package: libbooredis-dev
 Section: libdevel
 Architecture: any
 Depends: libbooredis0 (= ${binary:Version}), ${misc:Depends}
-Description:  Booredis is an asyncronous boost::asio-based Redis client library.
+Description: Asyncronous boost::asio-based Redis client library.
  It's main purpose is simplicity. You don't have to worry about almost
  nothing: it's very easy to use.
  .
@@ -33,9 +35,9 @@ Description:  Booredis is an asyncronous boost::asio-based Redis client library.
 Package: libbooredis0-dbg
 Section: debug
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libbooredis0 (= ${binary:Version})
+Depends: ${misc:Depends}, libbooredis0 (= ${binary:Version})
 Replaces: libbooredis-dbg (<< 0.1.0)
-Description:  Booredis is an asyncronous boost::asio-based Redis client library.
+Description: Asyncronous boost::asio-based Redis client library.
  It's main purpose is simplicity. You don't have to worry about almost
  nothing: it's very easy to use.
  .

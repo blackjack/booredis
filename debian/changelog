@@ -1,4 +1,15 @@
-booredis (0.1.0) unstable; urgency=low
+booredis (0.1.0-2) unstable; urgency=low
+
+  * Update Debian packaging stuff.
+  * Add Andriy Senkovych to Uploaders. Fix debug package name.
+  * Switch to DebSrc 3.0 (quilt) format.
+  * Fix package name in dependencies for debug symbols package.
+  * Fix Standards-Version.
+  * Add config for git-buildpackage
+
+ -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Tue, 09 Apr 2013 22:16:48 +0300
+
+booredis (0.1.0-1) unstable; urgency=low
 
   * New upstream release
 

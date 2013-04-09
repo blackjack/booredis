@@ -1,5 +1,5 @@
-usr/include/*
-usr/lib/pkgconfig/*
-usr/share/cmake-*/Modules/Findbooredis.cmake
-usr/lib/cmake/booredis/booredis-config-version.cmake
-usr/lib/cmake/booredis/booredis-config.cmake
+/usr/include
+/usr/lib/cmake
+/usr/lib/pkgconfig
+/usr/share/cmake-*
+/usr/lib/libbooredis*.so
