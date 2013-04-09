@@ -1,0 +1,9 @@
+*.debhelper.log
+*.substvars
+*.debhelper
+debian/libbooredis-dbg/
+debian/libbooredis-dev/
+debian/libbooredis0/
+debian/tmp/
+debian/files
+obj-*-linux-gnu/

@@ -79,7 +79,7 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
 install(FILES
         COPYING
         README
-        DESTINATION share/doc/libbooredis
+        DESTINATION "share/doc/libbooredis${BOOREDIS_LIB_MAJOR_VERSION}"
 )
 
 ADD_CUSTOM_TARGET(uninstall
