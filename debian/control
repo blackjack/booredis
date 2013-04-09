@@ -1,6 +1,7 @@
 Source: booredis
 Priority: extra
 Maintainer: Oleksandr Senkovych <bjsenya@gmail.com>
+Uploaders: Andriy Senkovych <jolly_roger@itblog.org.ua>
 Build-Depends: debhelper (>= 7), cmake, libboost-thread-dev (>= 1.42) , libboost-system-dev (>= 1.42)
 Standards-Version: 3.9.1
 Section: libs
@@ -29,7 +30,7 @@ Description:  Booredis is an asyncronous boost::asio-based Redis client library.
  .
  These are the development files.
 
-Package: libbooredis-dbg
+Package: libbooredis0-dbg
 Section: debug
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbooredis0 (= ${binary:Version})

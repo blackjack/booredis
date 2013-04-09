@@ -1,10 +1,15 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
 
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS:=$(shell dpkg-buildflags --get CFLAGS) $(CPPFLAGS)
+CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS) $(CPPFLAGS)
+LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+
+export CPPFLAGS CFLAGS CXXFLAGS LDFLAGS
 
 %:
-	dh $@ --dbg-package=libbooredis-dbg \
-	--parallel \
-	--list-missing
+	dh $@ --buildsystem=cmake
+
+.PHONY: override_dh_strip
+override_dh_strip:
+	dh_strip --dbg-package=libmyasquo0-dbg
