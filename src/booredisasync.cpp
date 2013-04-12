@@ -36,7 +36,11 @@ BooRedisAsync::BooRedisAsync(boost::asio::io_service &io_service):
 
 BooRedisAsync::~BooRedisAsync()
 {
-    disconnect();
+    m_connected = false;
+    if (m_ownIoService) {
+        m_io_service->stop();
+        m_thread.join();
+    }
 }
 
 void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
