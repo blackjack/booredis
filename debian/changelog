@@ -1,3 +1,16 @@
+booredis (0.1.1-1) unstable; urgency=low
+
+  [ Oleksandr Senkovych ]
+  * Fix async destructor
+  * CMake fixes (removed unuded stuff)
+  * Foreign io_service destruction fix
+
+  [ Andrii Senkovych ]
+  * gbp.conf: use "upstream" branch name as upstream branch
+  * Allow parallel builds with cmake
+
+ -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Fri, 04 Oct 2013 17:43:49 +0300
+
 booredis (0.1.0-2) unstable; urgency=low
 
   * Update Debian packaging stuff.
