@@ -5,8 +5,8 @@ install(FILES
         DESTINATION ${INCLUDE_INSTALL_DIR}/booredis COMPONENT Devel
 )
 
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+#add C++11 compile flag to be able to work with programs using it
+add_definitions("-std=c++11")
 
 set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp)
 
