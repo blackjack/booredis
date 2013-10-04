@@ -74,7 +74,7 @@ private:
     boost::asio::ip::tcp::resolver::iterator m_endpointIterator;
 
     bool m_ownIoService;
-    boost::scoped_ptr<boost::asio::io_service> m_io_service;
+    boost::asio::io_service* m_io_service;
     boost::scoped_ptr<boost::asio::ip::tcp::socket> m_socket;
     boost::scoped_ptr<boost::asio::deadline_timer> m_connectTimer;
     boost::posix_time::time_duration m_connectionTimeout;

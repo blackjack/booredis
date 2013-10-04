@@ -36,7 +36,12 @@ BooRedisAsync::BooRedisAsync(boost::asio::io_service &io_service):
 
 BooRedisAsync::~BooRedisAsync()
 {
-    disconnect();
+    m_connected = false;
+    if (m_ownIoService) {
+        m_io_service->stop();
+        m_thread.join();
+        delete m_io_service;
+    }
 }
 
 void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
@@ -58,7 +63,7 @@ void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
     connectStart(iterator);
 
     if (m_ownIoService && boost::this_thread::get_id() != m_thread.get_id())
-        m_thread = boost::thread(boost::bind(&boost::asio::io_service::run, m_io_service.get()));
+        m_thread = boost::thread(boost::bind(&boost::asio::io_service::run, m_io_service));
 }
 
 
@@ -83,7 +88,8 @@ void BooRedisAsync::disconnect() {
     if (m_ownIoService) {
         m_io_service->stop();
         m_thread.join();
-        m_io_service.reset(new boost::asio::io_service());
+        delete m_io_service;
+        m_io_service = new boost::asio::io_service();
     }
     m_socket.reset(new boost::asio::ip::tcp::socket(*m_io_service));
     m_connectTimer.reset(new boost::asio::deadline_timer(*m_io_service));
