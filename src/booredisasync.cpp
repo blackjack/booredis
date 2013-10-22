@@ -303,11 +303,17 @@ void BooRedisAsync::processMsgBuffer() {
     }
     case GetLength: {
         m_bytesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10)+2; //with trailing \r\n
-        if (m_bytesToRead == 1) { //was -1
-            onRedisMessage(m_bufferMessage);
-            reset();
-            return;
+        if (m_bytesToRead == 1) {
+            if (--m_messagesToRead <= 0) { //was -1
+                onRedisMessage(m_bufferMessage);
+                reset();
+                return;
+            } else {
+                m_analyzeState = GetType;
+                break;
+            }
         }
+
         m_readState = ReadUntilBytes;
         m_analyzeState = GetData;
         break;

@@ -206,13 +206,15 @@ bool BooRedisSync::processMsgBuffer() {
     }
     case GetLength: {
         m_bytesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10)+2; //with trailing \r\n
+        m_readState = ReadUntilBytes;
+        m_analyzeState = GetData;
         if (m_bytesToRead == 1) { //was -1, e.g. empty message
-            return true;
-        } else {
-            m_readState = ReadUntilBytes;
-            m_analyzeState = GetData;
-            break;
+            if (--m_messagesToRead <= 0)
+                return true;
+            else
+                m_analyzeState = GetType;
         }
+        break;
     }
     case GetData: {
         m_redisMsgBuf.erase(m_redisMsgBuf.size()-2,2); //remove trailing \r\n
