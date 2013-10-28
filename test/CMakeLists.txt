@@ -10,6 +10,7 @@ ExternalProject_Add(
         SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/
         TIMEOUT 10
         INSTALL_COMMAND ""
+        UPDATE_COMMAND "" #skip svn update
         LOG_DOWNLOAD ON
         LOG_CONFIGURE ON
         LOG_BUILD ON
@@ -20,7 +21,15 @@ SET(GTEST_LIB_DIR "${CMAKE_BINARY_DIR}/googletest/src/googletest-build")
 
 set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
+file(GLOB TEST_SRC_FILES
+${PROJECT_SOURCE_DIR}/test/*.cpp
+${PROJECT_SOURCE_DIR}/test/async/*.cpp
+${PROJECT_SOURCE_DIR}/test/sync/*.cpp
+
+${PROJECT_SOURCE_DIR}/test/*.h
+${PROJECT_SOURCE_DIR}/test/async/*.h
+${PROJECT_SOURCE_DIR}/test/sync/*.h
+)
 
 add_executable(${PROJECT_TEST_NAME}
     ${TEST_SRC_FILES}
