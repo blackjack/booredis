@@ -4,24 +4,15 @@ BooRedisSync::BooRedisSync():
     m_connected(false),
     m_ownIoService(true),
     m_ioService(new boost::asio::io_service()),
-    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
-    m_bytesToRead(1),
-    m_messagesToRead(0),
-    m_readState(ReadUntilBytes),
-    m_analyzeState(GetType)
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService))
 {
-    m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
 BooRedisSync::BooRedisSync(boost::asio::io_service &io_service):
     m_connected(false),
     m_ownIoService(false),
     m_ioService(&io_service),
-    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
-    m_bytesToRead(1),
-    m_messagesToRead(0),
-    m_readState(ReadUntilBytes),
-    m_analyzeState(GetType)
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService))
 {
 }
 
@@ -60,7 +51,7 @@ bool BooRedisSync::connected() {
     return m_connected;
 }
 
-RedisMessage BooRedisSync::command(const std::vector<std::string> &command_and_arguments)
+std::vector<RedisMessage> BooRedisSync::command(const std::vector<std::string> &command_and_arguments)
 {
     std::stringstream cmd;
     cmd << "*" << command_and_arguments.size() << "\r\n";
@@ -75,162 +66,37 @@ RedisMessage BooRedisSync::command(const std::vector<std::string> &command_and_a
 void BooRedisSync::disconnect() {
     if (m_socket->is_open())
         m_socket->close();
-    reset();
 }
 
-RedisMessage BooRedisSync::write(const std::string &msg) {
+std::vector<RedisMessage> BooRedisSync::write(const std::string &msg) {
     boost::system::error_code error;
-    boost::asio::write(*m_socket,boost::asio::buffer(msg), boost::asio::transfer_all(), error);
-    if (error) { onError(error); return RedisMessage(); }
+    std::vector<RedisMessage> result;
+
+    boost::asio::write(*m_socket,boost::asio::buffer(msg),boost::asio::transfer_all(),error);
+    if (error) {
+        onError(error);
+        return result;
+    }
+
     size_t size = m_socket->read_some(boost::asio::buffer(m_readBuffer, maxReadLength),error);
-    if (error) { onError(error); return RedisMessage(); }
-    while (!processRawBuffer(size)) {
+    if (error) {
+        onError(error);
+        return result;
+    }
+
+    m_decoder.reset();
+    BooRedisDecoder::DecodeResult decode_result;
+    do {
         size = m_socket->read_some(boost::asio::buffer(m_readBuffer, maxReadLength),error);
-        if (error) { onError(error); return RedisMessage(); }
+        decode_result = m_decoder.decode(m_readBuffer,size,result);
+    } while (decode_result == BooRedisDecoder::DecodeNeedMoreData);
+
+    if (decode_result == BooRedisDecoder::DecodeError) {
+        onError(boost::system::error_code());
+        m_lastError = "Could not decode redis stream";
     }
-    RedisMessage result = m_bufferMessage;
-    reset();
+
     return result;
-}
-
-bool BooRedisSync::processRawBuffer(size_t bytesTransferred)
-{
-    unsigned int carret = 0;
-    while ( carret < bytesTransferred ) {
-        if ( m_readState == ReadUntilBytes ) {
-            if ( bytesTransferred >= carret+m_bytesToRead) {
-                m_redisMsgBuf.append(&m_readBuffer[carret],m_bytesToRead);
-                carret+=m_bytesToRead;
-                m_bytesToRead = 0;
-                if (processMsgBuffer()) return true;
-            } else {
-                m_redisMsgBuf.append(&m_readBuffer[carret],bytesTransferred-carret);
-                m_bytesToRead-=bytesTransferred-carret;
-                carret=bytesTransferred;
-            }
-        } else if ( m_readState == ReadUntilNewLine ) {
-            bool found = false;
-            size_t newLinePos = 0; //new line char position from carret, e.g. \n is on carret+newLinePos position
-            char* newLine;
-            //own implementation of strchr with size
-            for (newLine = &m_readBuffer[carret]; newLine < &m_readBuffer[bytesTransferred]; ++newLine) {
-                if (*newLine == '\n') {
-                    found = true;
-                    newLinePos = (newLine-&m_readBuffer[carret]);
-                    break;
-                }
-            }
-
-            if (found && carret+newLinePos<bytesTransferred) {
-                m_redisMsgBuf.append(&m_readBuffer[carret],newLinePos+1);
-                carret+=newLinePos+1;
-                if (processMsgBuffer()) return true;
-            } else {
-                m_redisMsgBuf.append(&m_readBuffer[carret],bytesTransferred-carret);
-                m_bytesToRead-=bytesTransferred-carret;
-                carret=bytesTransferred;
-            }
-        }
-    }
-    return false;
-}
-
-
-bool BooRedisSync::processMsgBuffer() {
-    switch (m_analyzeState) {
-    case GetType: {
-        switch (m_redisMsgBuf.at(0)) {
-        case '+': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            m_bufferMessage.m_data.resize(1);
-            m_messagesToRead = 1;
-            m_bufferMessage.m_type = RedisMessage::Type_String;
-            break;
-        }
-        case '-': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            m_bufferMessage.m_data.resize(1);
-            m_messagesToRead = 1;
-            m_bufferMessage.m_type = RedisMessage::Type_Error;
-            break;
-        }
-        case ':': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            if (m_bufferMessage.m_type == RedisMessage::Type_Unknown) {
-                m_bufferMessage.m_data.resize(1);
-                m_messagesToRead = 1;
-                m_bufferMessage.m_type = RedisMessage::Type_Integer;
-            }
-            break;
-        }
-        case '$': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetLength;
-            if (m_bufferMessage.m_type == RedisMessage::Type_Unknown) {//if not array
-                m_bufferMessage.m_data.resize(1);
-                m_messagesToRead = 1;
-                m_bufferMessage.m_type = RedisMessage::Type_String;
-            }
-            break;
-        }
-        case '*': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetCount;
-            m_bufferMessage.m_type = RedisMessage::Type_Array;
-            break;
-        }
-        default: {
-            m_bufferMessage.m_data.clear();
-            m_bufferMessage.m_type = RedisMessage::Type_Unknown;
-            m_messagesToRead = 0;
-            m_bytesToRead = 1;
-            m_readState = ReadUntilBytes;
-            m_analyzeState = GetType;
-            onError(boost::system::error_code());
-        }
-        }
-        break;
-    }
-    case GetCount: {
-        m_messagesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10);
-        if (m_messagesToRead==0)
-            return true;
-        m_bufferMessage.m_data.resize(m_messagesToRead);
-        m_bytesToRead = 1;
-        m_readState = ReadUntilBytes;
-        m_analyzeState = GetType;
-        break;
-    }
-    case GetLength: {
-        m_bytesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10)+2; //with trailing \r\n
-        m_readState = ReadUntilBytes;
-        m_analyzeState = GetData;
-        if (m_bytesToRead == 1) { //was -1, e.g. empty message
-            if (--m_messagesToRead <= 0)
-                return true;
-            else
-                m_analyzeState = GetType;
-        }
-        break;
-    }
-    case GetData: {
-        m_redisMsgBuf.erase(m_redisMsgBuf.size()-2,2); //remove trailing \r\n
-        m_bufferMessage.m_data[m_bufferMessage.m_data.size()-m_messagesToRead] = m_redisMsgBuf;
-        if (--m_messagesToRead <= 0) {
-            return true;
-        } else {
-            m_bytesToRead = 1;
-            m_readState = ReadUntilBytes;
-            m_analyzeState = GetType;
-        }
-        break;
-    }
-    }
-    m_redisMsgBuf.clear();
-    return false;
 }
 
 void BooRedisSync::onError(const boost::system::error_code &error)
@@ -242,23 +108,12 @@ void BooRedisSync::onError(const boost::system::error_code &error)
     m_lastError = error.message();
 
     closeSocket(); //close socket and cleanup
-    reset();
 }
 
 void BooRedisSync::closeSocket()
 {
-    m_socket->close();
+    if (m_socket->is_open())
+        m_socket->close();
     m_socket.reset(new boost::asio::ip::tcp::socket(*m_ioService));
-}
-
-void BooRedisSync::reset()
-{
-    m_bytesToRead = 1;
-    m_messagesToRead = 0;
-    m_readState = ReadUntilBytes;
-    m_analyzeState = GetType;
-    m_redisMsgBuf.clear();
-    m_bufferMessage.m_data.clear();
-    m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 

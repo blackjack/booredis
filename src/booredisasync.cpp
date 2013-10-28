@@ -5,16 +5,10 @@ BooRedisAsync::BooRedisAsync():
     m_connected(false),
     m_writeInProgress(false),
     m_ownIoService(true),
-    m_io_service(new boost::asio::io_service),
-    m_socket(new boost::asio::ip::tcp::socket(*m_io_service)),
-    m_connectTimer(new boost::asio::deadline_timer(*m_io_service)),
-    //initial state - wait for type char
-    m_bytesToRead(1),
-    m_messagesToRead(0),
-    m_readState(ReadUntilBytes),
-    m_analyzeState(GetType)
+    m_ioService(new boost::asio::io_service),
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
+    m_connectTimer(new boost::asio::deadline_timer(*m_ioService))
 {
-    m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
 BooRedisAsync::BooRedisAsync(boost::asio::io_service &io_service):
@@ -22,25 +16,19 @@ BooRedisAsync::BooRedisAsync(boost::asio::io_service &io_service):
     m_connected(false),
     m_writeInProgress(false),
     m_ownIoService(false),
-    m_io_service(&io_service),
-    m_socket(new boost::asio::ip::tcp::socket(*m_io_service)),
-    m_connectTimer(new boost::asio::deadline_timer(*m_io_service)),
-    //initial state - wait for type char
-    m_bytesToRead(1),
-    m_messagesToRead(0),
-    m_readState(ReadUntilBytes),
-    m_analyzeState(GetType)
+    m_ioService(&io_service),
+    m_socket(new boost::asio::ip::tcp::socket(*m_ioService)),
+    m_connectTimer(new boost::asio::deadline_timer(*m_ioService))
 {
-    m_bufferMessage.m_type = RedisMessage::Type_Unknown;
 }
 
 BooRedisAsync::~BooRedisAsync()
 {
     m_connected = false;
     if (m_ownIoService) {
-        m_io_service->stop();
+        m_ioService->stop();
         m_thread.join();
-        delete m_io_service;
+        delete m_ioService;
     }
 }
 
@@ -49,7 +37,7 @@ void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
     if (m_connected)
         disconnect();
 
-    boost::asio::ip::tcp::resolver resolver(*m_io_service);
+    boost::asio::ip::tcp::resolver resolver(*m_ioService);
     char aport[8];
     sprintf(aport,"%d",port); //resolver::query accepts string as second parameter
 
@@ -63,7 +51,7 @@ void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
     connectStart(iterator);
 
     if (m_ownIoService && boost::this_thread::get_id() != m_thread.get_id())
-        m_thread = boost::thread(boost::bind(&boost::asio::io_service::run, m_io_service));
+        m_thread = boost::thread(boost::bind(&boost::asio::io_service::run, m_ioService));
 }
 
 
@@ -86,13 +74,13 @@ void BooRedisAsync::disconnect() {
     if (m_socket->is_open())
         m_socket->close();
     if (m_ownIoService) {
-        m_io_service->stop();
+        m_ioService->stop();
         m_thread.join();
-        delete m_io_service;
-        m_io_service = new boost::asio::io_service();
+        delete m_ioService;
+        m_ioService = new boost::asio::io_service();
     }
-    m_socket.reset(new boost::asio::ip::tcp::socket(*m_io_service));
-    m_connectTimer.reset(new boost::asio::deadline_timer(*m_io_service));
+    m_socket.reset(new boost::asio::ip::tcp::socket(*m_ioService));
+    m_connectTimer.reset(new boost::asio::deadline_timer(*m_ioService));
 }
 
 bool BooRedisAsync::connected() {
@@ -129,7 +117,7 @@ void BooRedisAsync::connectComplete(const boost::system::error_code& error)
 }
 
 void BooRedisAsync::write(const std::string &msg) {
-    m_io_service->post(boost::bind(&BooRedisAsync::doWrite, this, msg));
+    m_ioService->post(boost::bind(&BooRedisAsync::doWrite, this, msg));
 }
 
 
@@ -178,170 +166,30 @@ void BooRedisAsync::readComplete(const boost::system::error_code &error, size_t 
 {
     if (!error)
     {
-        processRawBuffer(bytesTransferred);
-        readStart();
+        std::vector<RedisMessage> result;
+        BooRedisDecoder::DecodeResult res = m_decoder.decode(m_readBuffer,bytesTransferred,result);
+
+        for (std::vector<RedisMessage>::iterator it=result.begin();it!=result.end();++it)
+            onRedisMessage(*it);
+
+        if (res != BooRedisDecoder::DecodeError)
+            readStart();
+        else {
+            onLogMessage("Error decoding redis message. Reconnecting",LOG_LEVEL_ERR);
+            onError(boost::system::error_code());
+        }
     }
     else
         onError(error);
 }
 
-void BooRedisAsync::processRawBuffer(size_t bytesTransferred)
-{
-    unsigned int carret = 0;
-    while ( carret < bytesTransferred ) {
-        if ( m_readState == ReadUntilBytes ) {
-            if ( bytesTransferred >= carret+m_bytesToRead) {
-                m_redisMsgBuf.append(&m_readBuffer[carret],m_bytesToRead);
-                carret+=m_bytesToRead;
-                m_bytesToRead = 0;
-                processMsgBuffer();
-            } else {
-                m_redisMsgBuf.append(&m_readBuffer[carret],bytesTransferred-carret);
-                m_bytesToRead-=bytesTransferred-carret;
-                carret=bytesTransferred;
-            }
-
-        } else if ( m_readState == ReadUntilNewLine ) {
-
-            bool found = false;
-            size_t newLinePos = 0; //new line char position from carret, e.g. \n is on carret+newLinePos position
-            char* newLine;
-            //own implementation of strchr with size
-            for (newLine = &m_readBuffer[carret]; newLine < &m_readBuffer[bytesTransferred]; ++newLine) {
-                if (*newLine == '\n') {
-                    found = true;
-                    newLinePos = (newLine-&m_readBuffer[carret]);
-                    break;
-                }
-            }
-
-            if (found && carret+newLinePos<bytesTransferred) {
-                m_redisMsgBuf.append(&m_readBuffer[carret],newLinePos+1);
-                carret+=newLinePos+1;
-                processMsgBuffer();
-            } else {
-                m_redisMsgBuf.append(&m_readBuffer[carret],bytesTransferred-carret);
-                m_bytesToRead-=bytesTransferred-carret;
-                carret=bytesTransferred;
-            }
-        }
-    }
-}
-
-
-void BooRedisAsync::processMsgBuffer() {
-    switch (m_analyzeState) {
-    case GetType: {
-        switch (m_redisMsgBuf.at(0)) {
-        case '+': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            m_bufferMessage.m_data.resize(1);
-            m_messagesToRead = 1;
-            m_bufferMessage.m_type = RedisMessage::Type_String;
-            break;
-        }
-        case '-': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            m_bufferMessage.m_data.resize(1);
-            m_messagesToRead = 1;
-            m_bufferMessage.m_type = RedisMessage::Type_Error;
-            break;
-        }
-        case ':': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetData;
-            if (m_bufferMessage.m_type == RedisMessage::Type_Unknown) {
-                m_bufferMessage.m_data.resize(1);
-                m_messagesToRead = 1;
-                m_bufferMessage.m_type = RedisMessage::Type_Integer;
-            }
-            break;
-        }
-        case '$': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetLength;
-            if (m_bufferMessage.m_type == RedisMessage::Type_Unknown) {//if not array
-                m_bufferMessage.m_data.resize(1);
-                m_messagesToRead = 1;
-                m_bufferMessage.m_type = RedisMessage::Type_String;
-            }
-            break;
-        }
-        case '*': {
-            m_readState = ReadUntilNewLine;
-            m_analyzeState = GetCount;
-            m_bufferMessage.m_type = RedisMessage::Type_Array;
-            break;
-        }
-        default: {
-            onLogMessage("Error processing Redis answer, reconnecting",LOG_LEVEL_ERR);
-            m_bufferMessage.m_data.clear();
-            m_bufferMessage.m_type = RedisMessage::Type_Unknown;
-            m_messagesToRead = 0;
-            m_bytesToRead = 1;
-            m_readState = ReadUntilBytes;
-            m_analyzeState = GetType;
-            onError(boost::system::error_code());
-        }
-        }
-        break;
-    }
-    case GetCount: {
-        m_messagesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10);
-        if (m_messagesToRead==0) {
-            onRedisMessage(m_bufferMessage);
-            reset();
-            return;
-        }
-        m_bufferMessage.m_data.resize(m_messagesToRead);
-        m_bytesToRead = 1;
-        m_readState = ReadUntilBytes;
-        m_analyzeState = GetType;
-        break;
-    }
-    case GetLength: {
-        m_bytesToRead = strtol(m_redisMsgBuf.c_str(),NULL,10)+2; //with trailing \r\n
-        if (m_bytesToRead == 1) {
-            if (--m_messagesToRead <= 0) { //was -1
-                onRedisMessage(m_bufferMessage);
-                reset();
-                return;
-            } else {
-                m_analyzeState = GetType;
-                break;
-            }
-        }
-
-        m_readState = ReadUntilBytes;
-        m_analyzeState = GetData;
-        break;
-    }
-    case GetData: {
-        m_redisMsgBuf.erase(m_redisMsgBuf.size()-2,2); //remove trailing \r\n
-        m_bufferMessage.m_data[m_bufferMessage.m_data.size()-m_messagesToRead] = m_redisMsgBuf;
-        if (--m_messagesToRead <= 0) {
-            onRedisMessage(m_bufferMessage);
-            reset();
-            return;
-        } else {
-            m_bytesToRead = 1;
-            m_readState = ReadUntilBytes;
-            m_analyzeState = GetType;
-        }
-        break;
-    }
-    }
-    m_redisMsgBuf.clear();
-}
 
 void BooRedisAsync::onError(const boost::system::error_code &error)
 {
     if (error == boost::asio::error::operation_aborted)
         return;
 
-    if (error)
+    if (error!=boost::system::error_code()) //If not decode error
         onLogMessage("Connection to Redis " + endpointToString(m_endpointIterator) + " failed: "
                      + error.message(),LOG_LEVEL_ERR);
 
@@ -352,7 +200,8 @@ void BooRedisAsync::onError(const boost::system::error_code &error)
     try {
         closeSocket(); //close socket and cleanup
     } catch (...) {}
-    reset();
+
+    m_decoder.reset();
 
     onDisconnect();
 
@@ -366,7 +215,6 @@ void BooRedisAsync::onError(const boost::system::error_code &error)
     onLogMessage("Reconnecting to Redis " + endpointToString(it),LOG_LEVEL_INFO);
 
     connect(it);
-
 }
 
 boost::asio::ip::tcp::resolver::iterator BooRedisAsync::getEndpointIterator()
@@ -406,17 +254,6 @@ void BooRedisAsync::closeSocket()
 {
     if (m_socket->is_open())
         m_socket->close();
-    m_socket.reset(new boost::asio::ip::tcp::socket(*m_io_service));
-}
-
-void BooRedisAsync::reset()
-{
-    m_bytesToRead = 1;
-    m_messagesToRead = 0;
-    m_readState = ReadUntilBytes;
-    m_analyzeState = GetType;
-    m_redisMsgBuf.clear();
-    m_bufferMessage.m_data.clear();
-    m_bufferMessage.m_type = RedisMessage::Type_Unknown;
+    m_socket.reset(new boost::asio::ip::tcp::socket(*m_ioService));
 }
 

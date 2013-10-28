@@ -30,12 +30,14 @@ int main( int argc, const char* argv[] ) {
     RedisWorker redis;
     redis.connect("localhost",6379,10000);
 
-    redis.command("SELECT 2\n");
-    std::vector<std::string> args;
-    args.push_back("SET");
-    args.push_back("asdf");
-    args.push_back("qwer");
-    redis.command(args);
+    redis.command("SELECT 2\r\n");
+    for (;;) {
+        std::vector<std::string> args;
+        args.push_back("SUBSCRIBE");
+        args.push_back("SOMESHIT");
+        redis.command(args);
+        sleep(1);
+    }
 
     char c;
     std::cin.read(&c,1);
