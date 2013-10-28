@@ -1,6 +1,8 @@
-PROJECT(booredis)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+set(PROJECT_NAME_STR booredis)
+project(${PROJECT_NAME_STR})
+
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
@@ -14,13 +16,6 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-# Ability to disable verbose debug output
-IF(BOOREDIS_VERBOSE_DEBUG_OUTPUT)
-  ADD_DEFINITIONS("-DBOOREDIS_VERBOSE_DEBUG_OUTPUT")
-endif(BOOREDIS_VERBOSE_DEBUG_OUTPUT)
-
-find_package(Boost COMPONENTS thread system REQUIRED)
-
 #add extra search paths for libraries and includes
 SET (LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
 SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")
@@ -30,7 +25,7 @@ SET (CMAKE_MODULES_INSTALL_DIR "${CMAKE_ROOT}/Modules" CACHE PATH "The directory
 
 set(BOOREDIS_LIB_MAJOR_VERSION "0")
 set(BOOREDIS_LIB_MINOR_VERSION "1")
-set(BOOREDIS_LIB_PATCH_VERSION "1")
+set(BOOREDIS_LIB_PATCH_VERSION "2")
 
 set(BOOREDIS_LIB_VERSION_STRING "${BOOREDIS_LIB_MAJOR_VERSION}.${BOOREDIS_LIB_MINOR_VERSION}.${BOOREDIS_LIB_PATCH_VERSION}")
 
@@ -45,10 +40,26 @@ IF (NOT WIN32)
            DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 ENDIF (NOT WIN32)
 
-# Subdirs
-ADD_SUBDIRECTORY(src)
+# Project dependencies
+find_package(Boost COMPONENTS thread system REQUIRED)
 
+set(
+COMMON_INCLUDES
+${PROJECT_SOURCE_DIR}/src
+${Boost_INCLUE_DIR}
+)
+
+set(
+COMMON_LIBRARIES
+${Boost_LIBRARIES}
+)
+include_directories(${COMMON_INCLUDES})
+
+SET(PROJECT_LIB booredis)
+
+# Subdirs
 add_subdirectory(cmake/modules)
+add_subdirectory(src)
 
 
 CONFIGURE_FILE(
@@ -56,7 +67,7 @@ CONFIGURE_FILE(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
-GET_TARGET_PROPERTY(LIB_OUT_NAME booredis LOCATION)
+GET_TARGET_PROPERTY(LIB_OUT_NAME ${PROJECT_LIB} LOCATION)
 GET_FILENAME_COMPONENT(LIB_OUT_NAME  ${LIB_OUT_NAME} NAME)
 
 # cmake-modules
@@ -78,3 +89,7 @@ install(FILES
 
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+# Testing
+SET(BUILD_UNITTESTS 1)
+add_subdirectory(test)
