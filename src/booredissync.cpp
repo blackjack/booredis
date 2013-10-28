@@ -19,8 +19,10 @@ BooRedisSync::BooRedisSync(boost::asio::io_service &io_service):
 BooRedisSync::~BooRedisSync()
 {
     disconnect();
-    if (m_ownIoService)
+    if (m_ownIoService) {
+        m_socket.reset(); //Delete socket before io_service
         delete m_ioService;
+    }
 }
 
 bool BooRedisSync::connect(const char *address, int port)

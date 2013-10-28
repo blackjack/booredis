@@ -28,6 +28,8 @@ BooRedisAsync::~BooRedisAsync()
     if (m_ownIoService) {
         m_ioService->stop();
         m_thread.join();
+        m_connectTimer.reset();
+        m_socket.reset();
         delete m_ioService;
     }
 }
