@@ -78,16 +78,15 @@ std::vector<RedisMessage> BooRedisSync::write(const std::string &msg) {
         return result;
     }
 
-    size_t size = m_socket->read_some(boost::asio::buffer(m_readBuffer, maxReadLength),error);
-    if (error) {
-        onError(error);
-        return result;
-    }
-
     m_decoder.reset();
+    size_t size;
     BooRedisDecoder::DecodeResult decode_result;
     do {
         size = m_socket->read_some(boost::asio::buffer(m_readBuffer, maxReadLength),error);
+        if (error) {
+            onError(error);
+            return result;
+        }
         decode_result = m_decoder.decode(m_readBuffer,size,result);
     } while (decode_result == BooRedisDecoder::DecodeNeedMoreData);
 
