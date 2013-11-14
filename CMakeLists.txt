@@ -82,7 +82,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/booredis-config-version.cmake.in
                @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/booredis-config-version.cmake
-        DESTINATION "lib/${CMAKE_LIBRARY_ARCHITECTURE}/${PROJECT_NAME_STR}")
+        DESTINATION "lib/${CMAKE_LIBRARY_ARCHITECTURE}/cmake/${PROJECT_NAME_STR}")
 
 install(FILES
         COPYING
