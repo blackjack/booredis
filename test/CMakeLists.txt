@@ -29,7 +29,7 @@ add_library(gtest_main UNKNOWN IMPORTED)
 set_property(TARGET gtest_main PROPERTY IMPORTED_LOCATION ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a)
 add_dependencies(gtest_main googletest)
 
-set(PROJECT_TEST_NAME test)
+set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 
 file(GLOB TEST_SRC_FILES
 ${PROJECT_SOURCE_DIR}/test/*.cpp
@@ -44,5 +44,7 @@ ${PROJECT_SOURCE_DIR}/test/sync/*.h
 add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
 target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB} gtest gtest_main ${COMMON_LIBRARIES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
+
+add_custom_target(test COMMAND ${PROJECT_TEST_NAME} DEPENDS ${PROJECT_TEST_NAME})
 
 ENDIF(${BUILD_UNITTESTS})
