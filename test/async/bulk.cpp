@@ -13,7 +13,7 @@ TEST(BooRedisAsync, Bulk)
 
 
     AsyncTestObject redis;
-    redis.connect("localhost",6379,1000);
+    redis.connect("127.0.0.1",6379,1000);
 
     std::vector<std::string> cmd;
     cmd.push_back("SET");

@@ -5,7 +5,8 @@
 
 struct Cleaner: BooRedisSync {
     Cleaner() {
-        connect("localhost",6379);
+        if (!connect("127.0.0.1",6379))
+            std::cerr << lastError() << std::endl;
     }
     Cleaner& operator << (const std::string& key) {
         std::vector<std::string> cmd;

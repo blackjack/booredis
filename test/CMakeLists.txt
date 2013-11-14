@@ -1,8 +1,9 @@
 IF(${BUILD_UNITTESTS})
 
 enable_testing()
-# Enable ExternalProject CMake module
+
 INCLUDE(ExternalProject)
+set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
 
 ExternalProject_Add(
         googletest
@@ -15,11 +16,20 @@ ExternalProject_Add(
         LOG_CONFIGURE ON
         LOG_BUILD ON
     )
-SET(GTEST_DIR "${CMAKE_BINARY_DIR}/googletest/src/googletest")
-SET(GTEST_INCLUDE_DIR "${GTEST_DIR}/include")
-SET(GTEST_LIB_DIR "${CMAKE_BINARY_DIR}/googletest/src/googletest-build")
 
-set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
+ExternalProject_Get_Property(googletest source_dir)
+include_directories(${source_dir}/include)
+
+ExternalProject_Get_Property(googletest binary_dir)
+add_library(gtest UNKNOWN IMPORTED)
+set_property(TARGET gtest PROPERTY IMPORTED_LOCATION ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
+add_dependencies(gtest googletest)
+
+add_library(gtest_main UNKNOWN IMPORTED)
+set_property(TARGET gtest_main PROPERTY IMPORTED_LOCATION ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a)
+add_dependencies(gtest_main googletest)
+
+set(PROJECT_TEST_NAME test)
 
 file(GLOB TEST_SRC_FILES
 ${PROJECT_SOURCE_DIR}/test/*.cpp
@@ -31,13 +41,8 @@ ${PROJECT_SOURCE_DIR}/test/async/*.h
 ${PROJECT_SOURCE_DIR}/test/sync/*.h
 )
 
-add_executable(${PROJECT_TEST_NAME}
-    ${TEST_SRC_FILES}
-)
+add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
+target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB} gtest gtest_main ${COMMON_LIBRARIES})
 add_dependencies(${PROJECT_TEST_NAME} googletest)
-include_directories(${GTEST_INCLUDE_DIR})
-
-TARGET_LINK_LIBRARIES(${PROJECT_TEST_NAME} ${PROJECT_LIB} ${COMMON_LIBRARIES} -L${GTEST_LIB_DIR} -lgtest -lgtest_main -lpthread)
-add_dependencies(${PROJECT_TEST_NAME} ${GTEST_LIB_DIR}/libgtest.a ${GTEST_LIB_DIR}/libgtest_main.a)
 
 ENDIF(${BUILD_UNITTESTS})

@@ -13,7 +13,7 @@ TEST(BooRedisSync, MultiBulk)
     Cleaner cleaner; cleaner << TEST_KEY;
 
     BooRedisSync redis;
-    redis.connect("localhost",6379);
+    redis.connect("127.0.0.1",6379);
 
     std::vector<std::string> cmd;
     cmd.push_back("HMSET");
@@ -33,7 +33,7 @@ TEST(BooRedisSync, MultiBulk)
 
     std::vector<RedisMessage> result = redis.command(cmd);
 
-    ASSERT_TRUE(redis.lastError().empty());
+    ASSERT_STREQ("",redis.lastError().c_str());
     ASSERT_EQ(1,result.size());
 
     RedisMessage& msg = result.at(0);

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
 
 set(PROJECT_NAME_STR booredis)
 project(${PROJECT_NAME_STR})
@@ -17,27 +17,33 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
 #add extra search paths for libraries and includes
-SET (LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
-SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "Directory where lib will install")
+SET (LIB_SUFFIX CACHE STRING "Define suffix of directory name (32/64)" )
+SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Directory where lib will install")
 SET (INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
-SET (CMAKE_MODULES_INSTALL_DIR "${CMAKE_ROOT}/Modules" CACHE PATH "The directory to install Findbooredis.cmake to")
+
+#We should not really install Findbooredis.cmake anywhere
+#CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findbooredis.cmake.in
+#               ${CMAKE_CURRENT_BINARY_DIR}/Findbooredis.cmake
+#               @ONLY)
+#INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/Findbooredis.cmake
+#         DESTINATION "${CMAKE_ROOT}/Modules")
 
 
-set(BOOREDIS_LIB_MAJOR_VERSION "0")
-set(BOOREDIS_LIB_MINOR_VERSION "1")
-set(BOOREDIS_LIB_PATCH_VERSION "2")
+set(LIB_MAJOR_VERSION "0")
+set(LIB_MINOR_VERSION "1")
+set(LIB_PATCH_VERSION "2")
 
-set(BOOREDIS_LIB_VERSION_STRING "${BOOREDIS_LIB_MAJOR_VERSION}.${BOOREDIS_LIB_MINOR_VERSION}.${BOOREDIS_LIB_PATCH_VERSION}")
+set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib/${CMAKE_LIBRARY_ARCHITECTURE}" )
 
 # pkg-config
 IF (NOT WIN32)
-  CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/booredis.pc.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/booredis.pc
+  CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME_STR}.pc.in
+                  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_STR}.pc
                   @ONLY)
-  INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis.pc
-           DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+  INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_STR}.pc
+           DESTINATION "lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig")
 ENDIF (NOT WIN32)
 
 # Project dependencies
@@ -55,12 +61,9 @@ ${Boost_LIBRARIES}
 )
 include_directories(${COMMON_INCLUDES})
 
-SET(PROJECT_LIB booredis)
+SET(PROJECT_LIB ${PROJECT_NAME_STR})
 
-# Subdirs
-add_subdirectory(cmake/modules)
 add_subdirectory(src)
-
 
 CONFIGURE_FILE(
   "${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in"
@@ -68,7 +71,7 @@ CONFIGURE_FILE(
   IMMEDIATE @ONLY)
 
 GET_TARGET_PROPERTY(LIB_OUT_NAME ${PROJECT_LIB} LOCATION)
-GET_FILENAME_COMPONENT(LIB_OUT_NAME  ${LIB_OUT_NAME} NAME)
+GET_FILENAME_COMPONENT(LIB_OUT_NAME ${LIB_OUT_NAME} NAME)
 
 # cmake-modules
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/booredis-config.cmake.in
@@ -79,17 +82,17 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/booredis-config-version.cmake.in
                @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/booredis-config-version.cmake
-        DESTINATION "lib/cmake/booredis")
+        DESTINATION "lib/${CMAKE_LIBRARY_ARCHITECTURE}/${PROJECT_NAME_STR}")
 
 install(FILES
         COPYING
         README
-        DESTINATION share/doc/libbooredis
+        DESTINATION "share/doc/lib${PROJECT_NAME_STR}"
 )
 
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 # Testing
-SET(BUILD_UNITTESTS 1)
+SET (BUILD_UNITTESTS Yes CACHE STRING "Automatically build unit tests")
 add_subdirectory(test)
