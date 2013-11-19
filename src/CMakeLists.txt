@@ -21,6 +21,7 @@ set_target_properties(${PROJECT_LIB} PROPERTIES
                       )
 
 INSTALL(TARGETS booredis
+   EXPORT booredis-targets
    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
    RUNTIME DESTINATION bin
    ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
