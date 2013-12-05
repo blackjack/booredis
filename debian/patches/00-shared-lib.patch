@@ -1,22 +1,29 @@
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -10,7 +10,7 @@
+@@ -11,7 +11,7 @@
  
- set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp)
+ set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp booredisdecoder.cpp)
  
--add_library (booredis STATIC ${booredis_SRCS})
-+add_library (booredis SHARED ${booredis_SRCS})
+-add_library (${PROJECT_LIB} STATIC ${booredis_SRCS})
++add_library (${PROJECT_LIB} SHARED ${booredis_SRCS})
  target_link_libraries(booredis  ${Boost_LIBRARIES})
  
- set_target_properties(booredis PROPERTIES
+ set_target_properties(${PROJECT_LIB} PROPERTIES
+@@ -36,5 +36,5 @@
+ install(FILES
+         examples/async.cpp
+         examples/sync.cpp
+-        DESTINATION share/doc/libbooredis/examples
++        DESTINATION "share/doc/lib${PROJECT_NAME_STR}${LIB_MAJOR_VERSION}"
+ )
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -79,7 +79,7 @@
+@@ -85,7 +85,7 @@
  install(FILES
          COPYING
          README
--        DESTINATION share/doc/libbooredis
-+        DESTINATION "share/doc/libbooredis${BOOREDIS_LIB_MAJOR_VERSION}"
+-        DESTINATION "share/doc/lib${PROJECT_NAME_STR}"
++        DESTINATION "share/doc/lib${PROJECT_NAME_STR}${LIB_MAJOR_VERSION}"
  )
  
  ADD_CUSTOM_TARGET(uninstall
