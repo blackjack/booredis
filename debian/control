@@ -3,7 +3,12 @@ Section: libs
 Priority: extra
 Maintainer: Andriy Senkovych <jolly_roger@itblog.org.ua>
 Uploaders: Oleksandr Senkovych <bjsenya@gmail.com>
-Build-Depends: debhelper (>= 7.0.50~), cmake, libboost-thread-dev (>= 1.42) , libboost-system-dev (>= 1.42)
+Build-Depends: debhelper (>= 7.0.50~), 
+    cmake (>= 2.8.5), 
+    libgtest-dev,
+    redis-server,
+    libboost-thread-dev (>= 1.42), 
+    libboost-system-dev (>= 1.42)
 Standards-Version: 3.9.4.0
 Homepage: https://github.com/blackjack/booredis
 Vcs-Git: git://github.com/blackjack/booredis.git
