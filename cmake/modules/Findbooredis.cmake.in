@@ -17,15 +17,14 @@ else (BOOREDIS_INCLUDE_DIR AND BOOREDIS_LIBRARIES)
     # use pkg-config to get the values of BOOREDIS_INCLUDE_DIRS
     # and BOOREDIS_LIBRARY_DIRS to add as hints to the find commands.
     include (FindPkgConfig)
-    pkg_check_modules (booredis REQUIRED booredis>=0.1)
+    pkg_check_modules (booredis REQUIRED booredis>=0.1.2)
   endif (NOT WIN32)
 
   find_library (BOOREDIS_LIBRARIES
     NAMES
     booredis
     PATHS
-    ${BOOREDIS_LIBRARY_DIRS}
-    ${LIB_INSTALL_DIR}
+    @LIB_INSTALL_DIR@
   )
 
   find_path (BOOREDIS_INCLUDE_DIR
@@ -34,8 +33,7 @@ else (BOOREDIS_INCLUDE_DIR AND BOOREDIS_LIBRARIES)
     PATH_SUFFIXES
     booredis
     PATHS
-    ${BOOREDIS_INCLUDE_DIRS}
-    ${INCLUDE_INSTALL_DIR}
+    @INCLUDE_INSTALL_DIR@
   )
 
   include(FindPackageHandleStandardArgs)

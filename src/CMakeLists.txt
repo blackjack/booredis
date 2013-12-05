@@ -2,24 +2,26 @@ install(FILES
         booredisasync.h
         booredissync.h
         redismessage.h
+        booredisdecoder.h
         DESTINATION ${INCLUDE_INSTALL_DIR}/booredis COMPONENT Devel
 )
 
 #add C++11 compile flag to be able to work with programs using it
 add_definitions("-std=c++11")
 
-set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp)
+set (booredis_SRCS booredisasync.cpp booredissync.cpp redismessage.cpp booredisdecoder.cpp)
 
-add_library (booredis STATIC ${booredis_SRCS})
+add_library (${PROJECT_LIB} STATIC ${booredis_SRCS})
 target_link_libraries(booredis  ${Boost_LIBRARIES})
 
-set_target_properties(booredis PROPERTIES
-                      VERSION ${BOOREDIS_LIB_MAJOR_VERSION}.${BOOREDIS_LIB_MINOR_VERSION}.${BOOREDIS_LIB_PATCH_VERSION}
-                      SOVERSION ${BOOREDIS_LIB_MAJOR_VERSION}
+set_target_properties(${PROJECT_LIB} PROPERTIES
+                      VERSION ${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}
+                      SOVERSION ${LIB_MAJOR_VERSION}
                       DEFINE_SYMBOL BOOREDIS_MAKEDLL
                       )
 
 INSTALL(TARGETS booredis
+   EXPORT booredis-targets
    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
    RUNTIME DESTINATION bin
    ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
