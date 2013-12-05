@@ -1,3 +1,26 @@
+booredis (0.1.3-1) unstable; urgency=low
+
+  [ Oleksandr Senkovych ]
+  * [cb9d638] Fix incorrect message in case of empty strings inside array response
+  * [31a005f] Moved all decoding stuff to separate class
+  * [791e002] Fix infinite loop in sync
+  * [d43c922] Basic testing
+  * [a63d188] Fix multi-bulk null entries
+  * [fe0e084] More sync testing
+  * [6003fbf] Fix segfaults caused by socket and io_service destruction order
+  * [4134e9d] Added async client tests, updated sync tests
+  * [5fbbe2b] Fix install target for multiarch
+  * [190f005] Fix test target
+  * [7358889] ls
+  * [4410091] Fixed find_package problems
+
+  [ Andriy Senkovych ]
+  * [3aa275f] Refresh patches
+  * [46b0d8d] Build-depend on libgtest-dev and redis-server, enable tests
+  * [aedd477] Enable multiarch
+
+ -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Fri, 06 Dec 2013 12:56:38 +0200
+
 booredis (0.1.1-1) unstable; urgency=low
 
   [ Oleksandr Senkovych ]
