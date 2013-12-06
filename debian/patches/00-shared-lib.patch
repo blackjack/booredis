@@ -14,7 +14,7 @@
          examples/async.cpp
          examples/sync.cpp
 -        DESTINATION share/doc/libbooredis/examples
-+        DESTINATION "share/doc/lib${PROJECT_NAME_STR}${LIB_MAJOR_VERSION}"
++        DESTINATION "share/doc/lib${PROJECT_NAME_STR}${LIB_MAJOR_VERSION}/examples"
  )
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
