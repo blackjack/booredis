@@ -1,5 +1,5 @@
 /usr/include
-/usr/lib/cmake
-/usr/lib/pkgconfig
-/usr/share/cmake-*
-/usr/lib/libbooredis*.so
+/usr/lib/*/cmake
+/usr/lib/*/pkgconfig
+/usr/lib/*/libbooredis*.so
+/usr/share/doc/*

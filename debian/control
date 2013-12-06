@@ -1,6 +1,6 @@
 Source: booredis
 Section: libs
-Priority: extra
+Priority: optional
 Maintainer: Andriy Senkovych <jolly_roger@itblog.org.ua>
 Uploaders: Oleksandr Senkovych <bjsenya@gmail.com>
 Build-Depends: debhelper (>= 7.0.50~), 
@@ -15,7 +15,9 @@ Vcs-Git: git://github.com/blackjack/booredis.git
 Vcs-Browser: https://github.com/blackjack/booredis
 
 Package: libbooredis0
+Multi-Arch: same
 Architecture: any
+Pre-Depends: multiarch-support
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Asyncronous boost::asio-based Redis client library.
  It's main purpose is simplicity. You don't have to worry about almost
@@ -27,6 +29,7 @@ Description: Asyncronous boost::asio-based Redis client library.
 Package: libbooredis-dev
 Section: libdevel
 Architecture: any
+Multi-Arch: same
 Depends: libbooredis0 (= ${binary:Version}), ${misc:Depends}
 Description: Asyncronous boost::asio-based Redis client library.
  It's main purpose is simplicity. You don't have to worry about almost
@@ -39,7 +42,9 @@ Description: Asyncronous boost::asio-based Redis client library.
 
 Package: libbooredis0-dbg
 Section: debug
+Priority: extra
 Architecture: any
+Multi-Arch: same
 Depends: ${misc:Depends}, libbooredis0 (= ${binary:Version})
 Replaces: libbooredis-dbg (<< 0.1.0)
 Description: Asyncronous boost::asio-based Redis client library.
