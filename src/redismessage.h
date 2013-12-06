@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-class BooRedisSync;
+class BooRedisDecoder;
 
 struct RedisMessage {
     enum MessageType { Type_Unknown, Type_String, Type_Integer, Type_Array, Type_Error };
@@ -15,8 +15,7 @@ struct RedisMessage {
     const std::vector<std::string>& array() const;
     const std::string& error() const;
 private:
-    friend class BooRedisSync;
-    friend class BooRedisAsync;
+    friend class BooRedisDecoder;
     MessageType m_type;
     std::vector<std::string> m_data;
 };

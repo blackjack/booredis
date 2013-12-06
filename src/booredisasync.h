@@ -1,12 +1,13 @@
 #ifndef BOOREDISASYNC_H
 #define BOOREDISASYNC_H
 
+#include "booredisdecoder.h"
+
 #include <deque>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#include "redismessage.h"
 
 
 class BooRedisAsync
@@ -39,7 +40,7 @@ public:
 
 protected:
     void write(const std::string& msg);
-    boost::asio::io_service& io_service() { return *m_io_service; }
+    boost::asio::io_service& io_service() { return *m_ioService; }
 
     boost::asio::ip::tcp::resolver::iterator getEndpointIterator();
     void setEndpointIterator(boost::asio::ip::tcp::resolver::iterator iterator);
@@ -50,11 +51,9 @@ protected:
     void connect(boost::asio::ip::tcp::resolver::iterator iterator);
 
     void closeSocket();
-    void reset(); //resets all Redis protocol-related state variables
 
     std::deque<std::string> m_writeBuffer; // buffered write data
 private:
-    static const int maxReadLength = 1023; // maximum amount of data to read in one operation
     void connectStart(boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
     void connectComplete(const boost::system::error_code& error);
     void readStart();
@@ -64,35 +63,24 @@ private:
     void writeComplete(const boost::system::error_code& error);
     void onError(const boost::system::error_code& error);
 
-    void processRawBuffer(size_t bytesTransferred);
-    void processMsgBuffer();
-
 private:
     bool m_onceConnected; //if any endpoint was valid
     bool m_connected; //if connected
     bool m_writeInProgress; //if write is in progress
     boost::asio::ip::tcp::resolver::iterator m_endpointIterator;
 
+    static const int maxReadLength = 1023; // maximum amount of data to read in one operation
+    char m_readBuffer[maxReadLength]; //raw data from the socket
+
     bool m_ownIoService;
-    boost::asio::io_service* m_io_service;
+    boost::asio::io_service* m_ioService;
     boost::scoped_ptr<boost::asio::ip::tcp::socket> m_socket;
     boost::scoped_ptr<boost::asio::deadline_timer> m_connectTimer;
     boost::posix_time::time_duration m_connectionTimeout;
 
-    char m_readBuffer[maxReadLength]; //raw data from the socket
-    std::string m_redisMsgBuf; //result data
-    RedisMessage m_bufferMessage; //final Redis message
-
-    int m_bytesToRead;
-    int m_messagesToRead;
-
-
-    enum ReadState { ReadUntilNewLine, ReadUntilBytes };
-    enum AnalyzeState { GetType, GetCount, GetLength, GetData };
-    ReadState m_readState;
-    AnalyzeState m_analyzeState;
-
     boost::thread m_thread; //io_service thread
+
+    BooRedisDecoder m_decoder;
 };
 
 #endif // BOOREDISASYNC_H
