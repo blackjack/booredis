@@ -2,4 +2,4 @@
 /usr/lib/*/cmake
 /usr/lib/*/pkgconfig
 /usr/lib/*/libbooredis*.so
-/usr/share/doc/*
+/usr/share/doc/*/* /usr/share/doc/libbooredis-dev
