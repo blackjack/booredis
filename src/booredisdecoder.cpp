@@ -63,6 +63,7 @@ BooRedisDecoder::DecodeResult BooRedisDecoder::decode(char* data, size_t len, st
             return ret;
         }
     }
+    return DecodeNeedMoreData;
 }
 
 void BooRedisDecoder::reset()
