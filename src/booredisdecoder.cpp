@@ -57,6 +57,8 @@ BooRedisDecoder::DecodeResult BooRedisDecoder::decode(char* data, size_t len, st
         case DecodeFinished:
             result.push_back(m_message);
             reset();
+            if (carret >= len)
+                return DecodeFinished;
             break;
         case DecodeError:
             reset();

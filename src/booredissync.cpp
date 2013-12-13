@@ -90,7 +90,7 @@ std::vector<RedisMessage> BooRedisSync::write(const std::string &msg) {
             return result;
         }
         decode_result = m_decoder.decode(m_readBuffer,size,result);
-    } while (decode_result == BooRedisDecoder::DecodeNeedMoreData);
+    } while (decode_result == BooRedisDecoder::DecodeNeedMoreData || m_socket->available()>0);
 
     if (decode_result == BooRedisDecoder::DecodeError) {
         onError(boost::system::error_code());
