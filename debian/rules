@@ -17,3 +17,10 @@ override_dh_strip:
 override_dh_auto_build:
 	dh_auto_build $@ --parallel
 
+override_dh_auto_test:
+ifneq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	@echo "Skipping check (disabled in DEB_BUILD_OPTIONS)."
+else
+	dh_auto_test $*
+endif
+
