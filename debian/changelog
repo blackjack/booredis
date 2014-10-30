@@ -7,8 +7,10 @@ booredis (0.1.4-1) unstable; urgency=medium
   [ Andriy Senkovych ]
   * [23d8252] Fix booredis include dir variables
   * [f0776b8] Add possibility to disable automatic tests run
+  * [33e88dd] Refresh patches
+  * [dc516a4] Debian release 0.1.4-1
 
- -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Thu, 30 Oct 2014 15:26:12 +0200
+ -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Thu, 30 Oct 2014 15:31:19 +0200
 
 booredis (0.1.3-3) unstable; urgency=medium
 
