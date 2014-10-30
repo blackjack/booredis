@@ -1,3 +1,15 @@
+booredis (0.1.4-1) unstable; urgency=medium
+
+  [ Oleksandr Senkovych ]
+  * [cebdbdd] Fix empty message if read buffer ends with mesasge type char
+  * [99403c7] Fix message parsing stop if message ends in current buffer
+
+  [ Andriy Senkovych ]
+  * [23d8252] Fix booredis include dir variables
+  * [f0776b8] Add possibility to disable automatic tests run
+
+ -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Thu, 30 Oct 2014 15:26:12 +0200
+
 booredis (0.1.3-3) unstable; urgency=medium
 
   * [c587bd6] Backport fix for INCLUDE_DIR location
