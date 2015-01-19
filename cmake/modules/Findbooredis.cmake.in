@@ -14,8 +14,8 @@ if (BOOREDIS_INCLUDE_DIR AND BOOREDIS_LIBRARIES)
 else (BOOREDIS_INCLUDE_DIR AND BOOREDIS_LIBRARIES)
 
   if (NOT WIN32)
-    # use pkg-config to get the values of BOOREDIS_INCLUDE_DIRS
-    # and BOOREDIS_LIBRARY_DIRS to add as hints to the find commands.
+    # use pkg-config to get the values of BOOREDIS_INCLUDE_DIR
+    # and BOOREDIS_LIBRARY_DIR to add as hints to the find commands.
     include (FindPkgConfig)
     pkg_check_modules (booredis REQUIRED booredis>=0.1.2)
   endif (NOT WIN32)

@@ -6,7 +6,7 @@
 
 # Compute paths
 get_filename_component(BOOREDIS_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(BOOREDIS_INCLUDE_DIRS "@INCLUDE_INSTALL_DIR@/booredis")
+set(BOOREDIS_INCLUDE_DIR "@INCLUDE_INSTALL_DIR@/booredis")
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET booredis)
