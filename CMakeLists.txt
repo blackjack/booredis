@@ -1,5 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
 
+#For cmake version 3.0 and higher. See "cmake --help-policy CMP0026"
+if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0)
+    cmake_policy(SET CMP0026 OLD)
+endif()
+
+#For cmake version 3.0 and higher. See "cmake --help-policy CMP0037"
+if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0)
+    cmake_policy(SET CMP0037 OLD)
+endif()
+
 set(PROJECT_NAME_STR booredis)
 project(${PROJECT_NAME_STR})
 
@@ -77,6 +87,7 @@ CONFIGURE_FILE(
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
+ # TODO: Deprecate use of "LOCATION" (CMP0026)
 GET_TARGET_PROPERTY(LIB_OUT_NAME ${PROJECT_LIB} LOCATION)
 GET_FILENAME_COMPONENT(LIB_OUT_NAME ${LIB_OUT_NAME} NAME)
 
