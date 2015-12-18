@@ -7,7 +7,7 @@ compiler:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install libgtest-dev
+  - sudo apt-get install libgtest-dev libboost-thread-dev libboost-system-dev
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
 
 services:
