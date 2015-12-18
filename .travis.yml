@@ -12,13 +12,14 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - boost-latest
     packages:
     - gcc-4.8
     - g++-4.8
     - clang
     - libgtest-dev
-    - libboost-thread1.53-dev
-    - libboost-system1.53-dev
+    - libboost-thread1.54-dev
+    - libboost-system1.54-dev
 
 services:
   - redis-server
