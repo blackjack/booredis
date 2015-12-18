@@ -1,0 +1,17 @@
+language: cpp
+
+compiler:
+  - gcc
+
+install:
+     - sudo apt-get install libgtest-dev
+
+services:
+  - redis-server
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make && make test
