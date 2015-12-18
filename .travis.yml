@@ -18,8 +18,8 @@ addons:
     - g++-4.8
     - clang
     - libgtest-dev
-    - libboost-thread1.54-dev
-    - libboost-system1.54-dev
+    - libboost-thread1.55-dev
+    - libboost-system1.55-dev
 
 services:
   - redis-server
