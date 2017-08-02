@@ -1,10 +1,10 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
 libdir=@LIB_INSTALL_DIR@
-includedir=@INCLUDE_INSTALL_DIR@/booredis
+includedir=@INCLUDE_INSTALL_DIR@/@PROJECT_NAME@
 
-Name: booredis
-Description: booredis is a boost::asio based asynchronous Redis client library
+Name: @PROJECT_NAME@
+Description: @PROJECT_NAME@ is a boost::asio based asynchronous Redis client library
 Version: @LIB_MAJOR_VERSION@.@LIB_MINOR_VERSION@.@LIB_PATCH_VERSION@
-Libs: -L${libdir} -lbooredis
+Libs: -L${libdir} -l@PROJECT_NAME@
 Cflags: -I${includedir}

@@ -1,18 +1,5 @@
-# - Config file for the FooBar package
-# It defines the following variables
-#  BOOREDIS_INCLUDE_DIRS - include directories for FooBar
-#  BOOREDIS_LIBRARIES    - libraries to link against
-#  BOOREDIS_EXECUTABLE   - the bar executable
+SET(@PROJECT_NAME@_LIBRARIES "@LIB_INSTALL_DIR@/$<TARGET_LINKER_FILE_NAME:@PROJECT_NAME@>" CACHE FILEPATH "Libraries for @PROJECT_NAME@")
+SET(@PROJECT_NAME@_INCLUDE_DIR "@INCLUDE_INSTALL_DIR@" CACHE PATH "Include path for @PROJECT_NAME@")
+SET(@PROJECT_NAME@_FOUND "TRUE")
 
-# Compute paths
-get_filename_component(BOOREDIS_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(BOOREDIS_INCLUDE_DIR "@INCLUDE_INSTALL_DIR@/booredis")
-
-# Our library dependencies (contains definitions for IMPORTED targets)
-if(NOT TARGET booredis)
-    include("${BOOREDIS_CMAKE_DIR}/booredis-targets.cmake")
-endif()
-
-set(BOOREDIS_LIBRARIES booredis)
-
-message(STATUS "Booredis found. Libraries: ${BOOREDIS_LIBRARIES}, headers: ${BOOREDIS_INCLUDE_DIRS}")
+message(STATUS "@PROJECT_NAME@ found. Lirbraries: ${@PROJECT_NAME@_LIBRARIES} Headers: ${@PROJECT_NAME@_INCLUDE_DIRS}"

@@ -1,4 +1,4 @@
-#include "../booredissync.h"
+#include "booredissync.h"
 #include <iostream>
 
 
