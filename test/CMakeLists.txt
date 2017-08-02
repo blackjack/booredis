@@ -1,50 +1,21 @@
-IF(${BUILD_UNITTESTS})
-
+find_package(GTestSrc REQUIRED)
 enable_testing()
 
-INCLUDE(ExternalProject)
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/ThirdParty)
+add_subdirectory(${GTEST_SOURCE_DIR} ${CMAKE_BINARY_DIR}/googletest EXCLUDE_FROM_ALL)
+include_directories(SYSTEM ${GTEST_INCLUDE_DIR})
 
-ExternalProject_Add(
-        googletest
-        PREFIX  ${CMAKE_BINARY_DIR}/googletest
-        SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/
-        TIMEOUT 10
-        INSTALL_COMMAND ""
-        UPDATE_COMMAND "" #skip svn update
-        LOG_DOWNLOAD ON
-        LOG_CONFIGURE ON
-        LOG_BUILD ON
-    )
+set(TEST_LIBRARIES gtest gtest_main)
 
-ExternalProject_Get_Property(googletest source_dir)
-include_directories(${source_dir}/include)
 
-ExternalProject_Get_Property(googletest binary_dir)
-add_library(gtest UNKNOWN IMPORTED)
-set_property(TARGET gtest PROPERTY IMPORTED_LOCATION ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
-add_dependencies(gtest googletest)
+set(UNIT_TEST_TARGETS "")
+macro(add_unit_test target)
+    set(UNIT_TEST_TARGETS ${UNIT_TEST_TARGETS} ${target} PARENT_SCOPE)
+    add_test(${target} ${CMAKE_CURRENT_BINARY_DIR}/${target})
+endmacro(add_unit_test)
 
-add_library(gtest_main UNKNOWN IMPORTED)
-set_property(TARGET gtest_main PROPERTY IMPORTED_LOCATION ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_main.a)
-add_dependencies(gtest_main googletest)
 
-set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
+include_directories("../src")
+add_subdirectory(async)
+add_subdirectory(sync)
 
-file(GLOB TEST_SRC_FILES
-${PROJECT_SOURCE_DIR}/test/*.cpp
-${PROJECT_SOURCE_DIR}/test/async/*.cpp
-${PROJECT_SOURCE_DIR}/test/sync/*.cpp
-
-${PROJECT_SOURCE_DIR}/test/*.h
-${PROJECT_SOURCE_DIR}/test/async/*.h
-${PROJECT_SOURCE_DIR}/test/sync/*.h
-)
-
-add_executable(${PROJECT_TEST_NAME} ${TEST_SRC_FILES})
-target_link_libraries(${PROJECT_TEST_NAME} ${PROJECT_LIB} gtest gtest_main ${COMMON_LIBRARIES})
-add_dependencies(${PROJECT_TEST_NAME} googletest)
-
-add_custom_target(test COMMAND ${PROJECT_TEST_NAME} DEPENDS ${PROJECT_TEST_NAME})
-
-ENDIF(${BUILD_UNITTESTS})
+add_custom_target(tests ALL DEPENDS ${UNIT_TEST_TARGETS})

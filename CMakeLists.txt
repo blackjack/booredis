@@ -1,52 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-#For cmake version 3.0 and higher. See "cmake --help-policy CMP0026"
-if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0)
-    cmake_policy(SET CMP0026 OLD)
-endif()
-
-#For cmake version 3.0 and higher. See "cmake --help-policy CMP0037"
-if(NOT ${CMAKE_VERSION} VERSION_LESS 3.0)
-    cmake_policy(SET CMP0037 OLD)
-endif()
-
-set(PROJECT_NAME_STR booredis)
-project(${PROJECT_NAME_STR})
-
-
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
-
-set(CMAKE_INSTALL_NAME_DIR ${LIB_INSTALL_DIR})
-
-# compile in debug mode
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
-
-OPTION(BOOREDIS_BUILD_EXAMPLES "Build booredis examples" ON)
-
-if ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "")
-else()
-  SET(LIB_SUFFIX "/${CMAKE_LIBRARY_ARCHITECTURE}")
-endif()
-
-#add extra search paths for libraries and includes
-SET (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Directory where lib will install")
-SET (INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
-
-
-SET (CMAKE_INSTALL_DIR "lib${LIB_SUFFIX}/cmake/${PROJECT_NAME_STR}" CACHE PATH "The directory cmake fiels are installed in")
-
-#We should not really install Findbooredis.cmake anywhere
-#CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findbooredis.cmake.in
-#               ${CMAKE_CURRENT_BINARY_DIR}/Findbooredis.cmake
-#               @ONLY)
-#INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/Findbooredis.cmake
-#         DESTINATION "${CMAKE_ROOT}/Modules")
-
+project(booredis)
 
 set(LIB_MAJOR_VERSION "0")
 set(LIB_MINOR_VERSION "1")
@@ -54,78 +9,104 @@ set(LIB_PATCH_VERSION "3")
 
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
+
+# compile in release with debug info mode by default
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
+
+OPTION(BOOREDIS_BUILD_SHARED "Build booredis as a shared library" ON)
+OPTION(BOOREDIS_BUILD_CXX11 "Build booredis with C++11" ON)
+OPTION(BOOREDIS_BUILD_EXAMPLES "Build booredis examples" ON)
+OPTION(BOOREDIS_BUILD_UNITTESTS "Automatically build unit tests" ON)
+
+
+# Select to build shared or static library
+IF(BOOREDIS_BUILD_SHARED)
+    SET(BOOREDIS_LIBRARY_TYPE SHARED)
+else()
+    SET(BOOREDIS_LIBRARY_TYPE STATIC)
+ENDIF()
+
+IF(BOOREDIS_BUILD_CXX11)
+    ADD_DEFINITIONS("-std=c++11")
+ENDIF()
+
+
+if ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "")
+else()
+  SET(LIB_SUFFIX "/${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
+
+#add extra search paths for libraries and includes
+SET(LIB_SUFFIX          "" CACHE STRING "Define suffix of directory name (32/64)" )
+SET(LIB_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Directory where lib will install")
+SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
+SET(DOC_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}" CACHE PATH "Path to the documentation")
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
 
-# pkg-config
-IF (NOT WIN32)
-  CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME_STR}.pc.in
-                  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_STR}.pc
-                  @ONLY)
-  INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_STR}.pc
-           DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
-ENDIF (NOT WIN32)
-
-# Project dependencies
-find_package(Boost COMPONENTS thread system REQUIRED)
-
-set(
-COMMON_INCLUDES
-${PROJECT_SOURCE_DIR}/src
-${Boost_INCLUE_DIR}
-)
-
-set(
-COMMON_LIBRARIES
-${Boost_LIBRARIES}
-)
-include_directories(${COMMON_INCLUDES})
-
-SET(PROJECT_LIB ${PROJECT_NAME_STR})
-
+# Subdirs
 add_subdirectory(src)
 add_subdirectory(examples)
 
+if(BOOREDIS_BUILD_UNITTESTS)
+    add_subdirectory(test)
+endif()
+
+
+EXPORT( PACKAGE ${PROJECT_NAME} )
+
+# CMake config to provide library detection on target system. New policy
+# requires to expand target name at run-time and not at configure time, thus
+# requiring to run file(GENERATE) after configure_file() in some cases.
+
+# See https://cmake.org/pipermail/cmake/2015-April/060350.html for more
+# details.
+
+SET(CMAKECONFIG_INSTALL_DIR lib/cmake/${PROJECT_NAME})
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake.pre
+               @ONLY)
+FILE(GENERATE
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+    INPUT  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake.pre)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config-version.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+               @ONLY)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+              DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+        COMPONENT dev)
+
+
+# pkg-config
+IF (NOT WIN32)
+    CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.pc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        @ONLY)
+    INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+ENDIF (NOT WIN32)
+
+
+install(FILES
+    COPYING
+    README
+    DESTINATION "${DOC_INSTALL_DIR}")
+
+
+# Install the export set for use with the install-tree
+install(EXPORT booredis-targets DESTINATION "${CMAKECONFIG_INSTALL_DIR}" COMPONENT dev)
+
+# Custom target to uninstall library and supplementary files
 CONFIGURE_FILE(
   "${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
- # TODO: Deprecate use of "LOCATION" (CMP0026)
-GET_TARGET_PROPERTY(LIB_OUT_NAME ${PROJECT_LIB} LOCATION)
-GET_FILENAME_COMPONENT(LIB_OUT_NAME ${LIB_OUT_NAME} NAME)
-
-
-
-install(FILES
-        COPYING
-        README
-        DESTINATION "share/doc/lib${PROJECT_NAME_STR}"
-)
-
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
-
-
-# Provide booredis-config.cmake and booredis-config.version to be used by other applications
-# ===============================
-
-export(PACKAGE ${CMAKE_PROJECT_NAME})
-
-# cmake-modules
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/booredis-config.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
-               @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/booredis-config-version.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/booredis-config-version.cmake
-               @ONLY)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/booredis-config.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/booredis-config-version.cmake
-        DESTINATION "${CMAKE_INSTALL_DIR}"
-        COMPONENT dev)
-
-# Install the export set for use with the install-tree
-install(EXPORT booredis-targets DESTINATION "${CMAKE_INSTALL_DIR}" COMPONENT dev)
-
-# Testing
-SET (BUILD_UNITTESTS Yes CACHE STRING "Automatically build unit tests")
-add_subdirectory(test)
