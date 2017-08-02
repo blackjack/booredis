@@ -26,6 +26,8 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+OPTION(BOOREDIS_BUILD_EXAMPLES "Build booredis examples" ON)
+
 if ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "")
 else()
   SET(LIB_SUFFIX "/${CMAKE_LIBRARY_ARCHITECTURE}")
@@ -81,6 +83,7 @@ include_directories(${COMMON_INCLUDES})
 SET(PROJECT_LIB ${PROJECT_NAME_STR})
 
 add_subdirectory(src)
+add_subdirectory(examples)
 
 CONFIGURE_FILE(
   "${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in"

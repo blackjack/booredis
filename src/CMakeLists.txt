@@ -26,15 +26,3 @@ INSTALL(TARGETS booredis
    RUNTIME DESTINATION bin
    ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
 )
-
-add_executable(async examples/async.cpp)
-target_link_libraries(async booredis)
-
-add_executable(sync examples/sync.cpp)
-target_link_libraries(sync booredis)
-
-install(FILES
-        examples/async.cpp
-        examples/sync.cpp
-        DESTINATION share/doc/libbooredis/examples
-)
