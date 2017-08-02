@@ -10,10 +10,6 @@ export CPPFLAGS CFLAGS CXXFLAGS LDFLAGS
 %:
 	dh $@ --buildsystem=cmake
 
-.PHONY: override_dh_strip override_dh_auto_build
-override_dh_strip:
-	dh_strip --dbg-package=libbooredis0-dbg
-
 override_dh_auto_build:
 	dh_auto_build $@ --parallel
 

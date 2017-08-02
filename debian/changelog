@@ -1,8 +1,11 @@
 booredis (0.1.4.1-1) unstable; urgency=medium
 
+  [ Andriy Senkovych ]
   * New upstream release
 
- -- Andriy Senkovych <jolly_roger@itblog.org.ua>  Mon, 19 Jan 2015 16:55:49 +0200
+  [ Andrii Senkovych ]
+
+ -- Andrii Senkovych <jolly_roger@itblog.org.ua>  Wed, 02 Aug 2017 17:59:58 +0300
 
 booredis (0.1.4-1) unstable; urgency=medium
 

@@ -3,15 +3,15 @@ Section: libs
 Priority: optional
 Maintainer: Andriy Senkovych <jolly_roger@itblog.org.ua>
 Uploaders: Oleksandr Senkovych <bjsenya@gmail.com>
-Build-Depends: debhelper (>= 9), 
+Build-Depends: debhelper (>= 10), 
     cmake (>= 2.8.5), 
     libgtest-dev,
     redis-server,
     libboost-thread-dev (>= 1.42), 
     libboost-system-dev (>= 1.42)
-Standards-Version: 3.9.4.0
+Standards-Version: 4.0.0
 Homepage: https://github.com/blackjack/booredis
-Vcs-Git: git://github.com/blackjack/booredis.git
+Vcs-Git: git://github.com/blackjack/booredis.git -b debian
 Vcs-Browser: https://github.com/blackjack/booredis
 
 Package: libbooredis0
@@ -39,19 +39,3 @@ Description: Asyncronous boost::asio-based Redis client library.
  Redis, but it's very convenient way to use for setting values and subscribing.
  .
  These are the development files.
-
-Package: libbooredis0-dbg
-Section: debug
-Priority: extra
-Architecture: any
-Multi-Arch: same
-Depends: ${misc:Depends}, libbooredis0 (= ${binary:Version})
-Replaces: libbooredis-dbg (<< 0.1.0)
-Description: Asyncronous boost::asio-based Redis client library.
- It's main purpose is simplicity. You don't have to worry about almost
- nothing: it's very easy to use.
- .
- For now due to it's async nature it's not very usable to get values from
- Redis, but it's very convenient way to use for setting values and subscribing.
- .
- This package contains debugging symbols
