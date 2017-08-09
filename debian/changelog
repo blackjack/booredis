@@ -1,9 +1,15 @@
+booredis (0.1.6-1) unstable; urgency=medium
+
+  * New upstream release 0.1.6
+
+ -- Andrii Senkovych <jolly_roger@itblog.org.ua>  Wed, 09 Aug 2017 16:20:10 +0300
+
 booredis (0.1.5-1) unstable; urgency=medium
 
   * Release 0.1.5
   * Update build files
 
- -- Andrii Senkovych <jolly_roger@itblog.org.ua>  Wed, 02 Aug 2017 18:04:02 +0300
+ -- Andrii Senkovych <jolly_roger@itblog.org.ua>  Wed, 09 Aug 2017 16:18:24 +0300
 
 booredis (0.1.4.1-1) unstable; urgency=medium
 
