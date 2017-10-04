@@ -48,6 +48,7 @@ void BooRedisAsync::connect(const char *address, int port, int timeout_msec)
 
     onLogMessage(std::string("Connecting to Redis ") + address + ":" + aport);
 
+    m_port = port;
     m_connectionTimeout = boost::posix_time::milliseconds(timeout_msec);
 
     connectStart(iterator);
@@ -109,7 +110,7 @@ void BooRedisAsync::connectComplete(const boost::system::error_code& error)
         m_connected = true;
 
         onLogMessage("Successfully connected to Redis " + endpointToString(getEndpointIterator()),LOG_LEVEL_INFO);
-        onConnect();
+        onConnect(m_port);
 
         if (!m_writeInProgress && !m_writeBuffer.empty())
             writeStart();
@@ -205,7 +206,7 @@ void BooRedisAsync::onError(const boost::system::error_code &error)
 
     m_decoder.reset();
 
-    onDisconnect();
+    onDisconnect(m_port);
 
     boost::asio::ip::tcp::resolver::iterator it = getEndpointIterator();
     if (!onceConnected() && !isLastEndpoint(it)) { //try another address

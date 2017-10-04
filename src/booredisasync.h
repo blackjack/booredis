@@ -26,8 +26,8 @@ public:
 
     virtual void onRedisMessage(const RedisMessage& msg) {} //implement this to get redis messages
     virtual void onLogMessage(const std::string& msg, int logLevel = LOG_LEVEL_INFO) {} //not implemented in base class
-    virtual void onDisconnect() {}
-    virtual void onConnect() {}
+    virtual void onDisconnect(int port) {}
+    virtual void onConnect(int port) {}
 
 public:
     static const int LOG_LEVEL_EMERG = 0;
@@ -68,6 +68,7 @@ private:
     bool m_onceConnected; //if any endpoint was valid
     bool m_connected; //if connected
     bool m_writeInProgress; //if write is in progress
+    bool m_port; //store current port number
     boost::asio::ip::tcp::resolver::iterator m_endpointIterator;
 
     static const int maxReadLength = 1023; // maximum amount of data to read in one operation
