@@ -1,7 +1,7 @@
 #ifndef CLEANER_H
 #define CLEANER_H
 
-#include <booredissync.h>
+#include <booredis/sync.h>
 
 struct Cleaner: BooRedisSync {
     Cleaner() {

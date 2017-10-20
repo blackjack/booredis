@@ -1,12 +1,12 @@
 #ifndef BOOREDISSYNC_H
 #define BOOREDISSYNC_H
 
-#include "booredisdecoder.h"
-
 #include <vector>
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
+
+#include "decoder.h"
 
 class BooRedisSync
 {

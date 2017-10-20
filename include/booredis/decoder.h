@@ -1,9 +1,10 @@
 #ifndef BOOREDISDECODER_H
 #define BOOREDISDECODER_H
 
-#include "redismessage.h"
 #include <boost/function.hpp>
 #include <boost/system/error_code.hpp>
+
+#include "redismessage.h"
 
 class BooRedisDecoder
 {

@@ -1,9 +1,10 @@
 #ifndef ASYNCTESTOBJECT_H
 #define ASYNCTESTOBJECT_H
 
-#include <booredisasync.h>
 #include <boost/thread/future.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <booredis/async.h>
 
 struct AsyncTestObject: BooRedisAsync {
     boost::unique_future<RedisMessage> command(const std::vector<std::string> &command_and_arguments) {

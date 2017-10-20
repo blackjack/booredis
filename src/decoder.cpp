@@ -1,4 +1,4 @@
-#include "booredisdecoder.h"
+#include "booredis/decoder.h"
 
 namespace {
 //own implementation of strchr with size
