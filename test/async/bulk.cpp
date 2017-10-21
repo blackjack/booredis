@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
-#include <booredisasync.h>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <gtest/gtest.h>
+
+#include <booredis/async.h>
 
 #include "../cleaner.h"
 #include "asynctestobject.h"

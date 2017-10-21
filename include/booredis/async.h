@@ -1,8 +1,6 @@
 #ifndef BOOREDISASYNC_H
 #define BOOREDISASYNC_H
 
-#include "booredisdecoder.h"
-
 #include <deque>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -10,6 +8,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/scoped_ptr.hpp>
 
+#include "decoder.h"
 
 class BooRedisAsync
 {

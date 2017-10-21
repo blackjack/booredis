@@ -1,5 +1,6 @@
-#include "booredisasync.h"
 #include <iostream>
+
+#include "booredis/async.h"
 
 
 class RedisWorker: public BooRedisAsync {

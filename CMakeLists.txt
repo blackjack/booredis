@@ -1,12 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 project(booredis)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+include(GNUInstallDirs)
 
 set(LIB_MAJOR_VERSION "0")
 set(LIB_MINOR_VERSION "1")
-set(LIB_PATCH_VERSION "6")
+set(LIB_PATCH_VERSION "7")
 
 set(LIB_VERSION_STRING "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_PATCH_VERSION}")
 
@@ -36,19 +38,7 @@ IF(BOOREDIS_BUILD_CXX11)
     ADD_DEFINITIONS("-std=c++11")
 ENDIF()
 
-
-if ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "")
-else()
-  SET(LIB_SUFFIX "/${CMAKE_LIBRARY_ARCHITECTURE}")
-endif()
-
-#add extra search paths for libraries and includes
-SET(LIB_SUFFIX          "" CACHE STRING "Define suffix of directory name (32/64)" )
-SET(LIB_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_LIBRARY_ARCHITECTURE}" CACHE STRING "Directory where lib will install")
-SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
-SET(DOC_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}" CACHE PATH "Path to the documentation")
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib${LIB_SUFFIX}" )
-
+include_directories(include)
 # Subdirs
 add_subdirectory(src)
 add_subdirectory(examples)
@@ -67,7 +57,7 @@ EXPORT( PACKAGE ${PROJECT_NAME} )
 # See https://cmake.org/pipermail/cmake/2015-April/060350.html for more
 # details.
 
-SET(CMAKECONFIG_INSTALL_DIR lib/cmake/${PROJECT_NAME})
+SET(CMAKE_INSTALL_CMAKECONF ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake.pre
                @ONLY)
@@ -80,9 +70,12 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config-version.cmake.
                @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-              DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+              DESTINATION ${CMAKE_INSTALL_CMAKECONF}
         COMPONENT dev)
 
+install(DIRECTORY include/${PROJECT_NAME} 
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    COMPONENT dev)
 
 # pkg-config
 IF (NOT WIN32)
@@ -90,18 +83,17 @@ IF (NOT WIN32)
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
         @ONLY)
     INSTALL (FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-        DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 ENDIF (NOT WIN32)
-
 
 install(FILES
     COPYING
     README
-    DESTINATION "${DOC_INSTALL_DIR}")
-
+    DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+    COMPONENT doc)
 
 # Install the export set for use with the install-tree
-install(EXPORT booredis-targets DESTINATION "${CMAKECONFIG_INSTALL_DIR}" COMPONENT dev)
+install(EXPORT booredis-targets DESTINATION "${CMAKE_INSTALL_CMAKECONF}" COMPONENT dev)
 
 # Custom target to uninstall library and supplementary files
 CONFIGURE_FILE(

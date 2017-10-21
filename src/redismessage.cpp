@@ -1,5 +1,6 @@
-#include "redismessage.h"
-#include "stdlib.h"
+#include <cstdlib>
+
+#include "booredis/redismessage.h"
 
 RedisMessage::MessageType RedisMessage::type() const
 {

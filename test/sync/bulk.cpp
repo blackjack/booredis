@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-#include <booredissync.h>
+
+#include <booredis/sync.h>
 
 #include "../cleaner.h"
 

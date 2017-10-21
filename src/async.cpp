@@ -1,4 +1,4 @@
-#include "booredisasync.h"
+#include "booredis/async.h"
 
 BooRedisAsync::BooRedisAsync():
     m_onceConnected(false),

@@ -1,5 +1,6 @@
-#include "booredissync.h"
 #include <iostream>
+
+#include "booredis/sync.h"
 
 
 int main( int argc, const char* argv[] ) {

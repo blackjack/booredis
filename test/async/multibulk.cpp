@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-#include <booredisasync.h>
+
+#include <booredis/async.h>
 
 #include "../cleaner.h"
 #include "asynctestobject.h"

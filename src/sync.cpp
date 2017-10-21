@@ -1,4 +1,4 @@
-#include "booredissync.h"
+#include "booredis/sync.h"
 
 BooRedisSync::BooRedisSync():
     m_connected(false),

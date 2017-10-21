@@ -1,8 +1,8 @@
 set (booredis_SRCS 
-    booredisasync.cpp 
-    booredissync.cpp 
-    redismessage.cpp 
-    booredisdecoder.cpp)
+    async.cpp 
+    sync.cpp 
+    decoder.cpp
+    redismessage.cpp) 
 
 find_package(Boost COMPONENTS thread system REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
@@ -17,16 +17,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 INSTALL(TARGETS booredis
    EXPORT booredis-targets
-   LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
    RUNTIME DESTINATION bin
-   ARCHIVE DESTINATION  ${LIB_INSTALL_DIR}
-)
-
-install(FILES
-    booredisasync.h
-    booredissync.h
-    redismessage.h
-    booredisdecoder.h
-    DESTINATION ${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}
-    COMPONENT dev
+   ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR}
 )
