@@ -4,6 +4,8 @@ set(booredis_SRCS
     decoder.cpp
     redismessage.cpp)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 find_package(Boost 1.42 REQUIRED COMPONENTS thread system)
 
 add_library(booredis
@@ -16,8 +18,11 @@ target_include_directories(booredis
 
 target_include_directories(booredis SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 
-target_link_libraries(booredis ${Boost_LIBRARIES})
-target_compile_features(booredis PRIVATE cxx_std_14)
+target_link_libraries(booredis
+                      PUBLIC ${Boost_LIBRARIES}
+                      PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+target_compile_features(booredis PRIVATE cxx_std_11)
 
 set_target_properties(booredis
                       PROPERTIES
