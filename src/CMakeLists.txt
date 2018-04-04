@@ -8,7 +8,14 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 find_package(Boost 1.42 REQUIRED COMPONENTS thread system)
 
+if (BOOREDIS_BUILD_SHARED)
+  set(library_type SHARED)
+else()
+  set(library_type STATIC)
+endif()
+
 add_library(booredis
+            ${library_type}
             ${booredis_SRCS})
 
 target_include_directories(booredis
@@ -22,7 +29,10 @@ target_link_libraries(booredis
                       PUBLIC ${Boost_LIBRARIES}
                       PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
-target_compile_features(booredis PRIVATE cxx_std_11)
+set_target_properties(booredis
+                      PROPERTIES
+                      CXX_STANDARD 11
+                      CXX_STANDARD_REQUIRED YES)
 
 set_target_properties(booredis
                       PROPERTIES

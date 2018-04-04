@@ -1,6 +1,6 @@
 CMake_minimum_required(VERSION 3.0)
 
-project(booredis VERSION 0.2.0)
+project(booredis VERSION 0.2.0 LANGUAGES CXX)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(GNUInstallDirs)
@@ -12,12 +12,13 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif()
 
-option(BUILD_EXAMPLES "Build booredis examples" ON)
+option(BOOREDIS_BUILD_SHARED "Build booredis as a shared library" ON)
+option(BOOREDIS_BUILD_EXAMPLES "Build booredis examples" ON)
 
 # Subdirs
 add_subdirectory(src)
 
-if (BUILD_EXAMPLES)
+if (BOOREDIS_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 

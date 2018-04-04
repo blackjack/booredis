@@ -1,3 +1,5 @@
+@PACKAGE_INIT@
+
 get_filename_component(BOOREDIS_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 # For backward compatibility
