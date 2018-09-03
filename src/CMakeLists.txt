@@ -1,23 +1,46 @@
-set (booredis_SRCS 
-    async.cpp 
-    sync.cpp 
+set(booredis_SRCS
+    async.cpp
+    sync.cpp
     decoder.cpp
-    redismessage.cpp) 
+    redismessage.cpp)
 
-find_package(Boost COMPONENTS thread system REQUIRED)
-include_directories(${Boost_INCLUDE_DIR})
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+find_package(Boost 1.42 REQUIRED COMPONENTS thread system)
 
-add_library(${PROJECT_NAME} ${BOOREDIS_LIBRARY_TYPE} ${booredis_SRCS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+if (BOOREDIS_BUILD_SHARED)
+  set(library_type SHARED)
+else()
+  set(library_type STATIC)
+endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION "${LIB_VERSION_STRING}"
-    SOVERSION "${LIB_MAJOR_VERSION}"
-    DEFINE_SYMBOL "BOOREDIS_MAKEDLL")
+add_library(booredis
+            ${library_type}
+            ${booredis_SRCS})
 
-INSTALL(TARGETS booredis
-   EXPORT booredis-targets
-   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-   RUNTIME DESTINATION bin
-   ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR}
-)
+target_include_directories(booredis
+                           PUBLIC
+                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                           $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
+
+target_include_directories(booredis SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(booredis
+                      PUBLIC ${Boost_LIBRARIES}
+                      PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+set_target_properties(booredis
+                      PROPERTIES
+                      CXX_STANDARD 11
+                      CXX_STANDARD_REQUIRED YES)
+
+set_target_properties(booredis
+                      PROPERTIES
+                      VERSION ${PROJECT_VERSION}
+                      SOVERSION ${PROJECT_VERSION_MAJOR}
+                      DEFINE_SYMBOL "BOOREDIS_MAKEDLL")
+
+install(TARGETS booredis
+        EXPORT booredis-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION  ${CMAKE_INSTALL_LIBDIR})

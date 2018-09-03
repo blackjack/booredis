@@ -5,6 +5,6 @@ includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
 Name: @PROJECT_NAME@
 Description: @PROJECT_NAME@ is a boost::asio based asynchronous Redis client library
-Version: @LIB_VERSION_STRING@
+Version: @PROJECT_VERSION@
 Libs: -L${libdir} -l@PROJECT_NAME@
 Cflags: -I${includedir}
